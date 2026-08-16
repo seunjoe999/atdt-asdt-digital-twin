@@ -21,6 +21,9 @@ import asyncio
 import logging
 from functools import lru_cache
 
+import json
+import re
+
 from dyon.core.config import TwinConfig
 from dyon.intelligent.agent import build_llm
 
@@ -35,9 +38,77 @@ def _config() -> TwinConfig:
     return TwinConfig(asset_id="atdt", asset_type="course_twin", asset_name="ATDT")
 
 
+def _atdt_offline_responder(prompt: str) -> str:
+    """A course-aware offline responder (dyon's documented extension point,
+    see ``OfflineChatModel``'s docstring).
+
+    The default offline responder just echoes the prompt back, which is fine
+    for a generic twin demo but breaks the Examination channel here: its
+    prompts require a strict JSON reply, and echoed prose never parses,
+    silently producing a zero-question assessment. This responder recognises
+    ATDT's own prompt shapes (all defined in app/rag/) and returns a
+    minimally valid, clearly-labelled reply for each, so every channel is
+    demoable end to end with zero API keys — the offline provider still
+    doesn't reason, it just no longer breaks structurally.
+    """
+    if '"mcqs"' in prompt and '"saqs"' in prompt:
+        # Assessment generation (app/rag/assessment_agent.py::generate_questions).
+        excerpt = _first_source_sentence(prompt)
+        return json.dumps(
+            {
+                "mcqs": [
+                    {
+                        "text": f"[offline model — no LLM configured] Which statement best "
+                        f"matches the course material? ({excerpt[:80]})",
+                        "options": [excerpt[:60] or "Option A", "Option B", "Option C", "Option D"],
+                        "correct_answer": excerpt[:60] or "Option A",
+                    }
+                ],
+                "saqs": [
+                    {
+                        "text": "[offline model — no LLM configured] Explain the concept "
+                        "covered in the course material excerpt.",
+                        "rubric": "Award full credit for any answer that engages with the "
+                        "excerpted material; a real LLM provider is needed for meaningful "
+                        "question generation and grading.",
+                    }
+                ],
+            }
+        )
+    if '"score"' in prompt and '"feedback"' in prompt:
+        # SAQ grading (app/rag/assessment_agent.py::grade_saq).
+        return json.dumps(
+            {
+                "score": 0.5,
+                "feedback": "[offline model] No language model is configured, so this "
+                "response could not be graded against the rubric. Configure DT_LLM__PROVIDER "
+                "to get real grading.",
+            }
+        )
+    # Tutoring / Teaching prompts: fall back to an extractive, clearly-labelled
+    # answer built from the first retrieved source rather than pure echo.
+    excerpt = _first_source_sentence(prompt)
+    if excerpt:
+        return f"[offline model — no LLM configured] The course material says: {excerpt}"
+    return "[offline model] No language model is configured, and no course material was retrieved for this question."
+
+
+def _first_source_sentence(prompt: str) -> str:
+    match = re.search(r"\[Source 1:.*?\]\s*\n(.+)", prompt)
+    if not match:
+        return ""
+    sentence = re.split(r"(?<=[.!?])\s", match.group(1).strip())[0]
+    return sentence.strip()
+
+
 @lru_cache
 def _llm():
-    return build_llm(_config())
+    config = _config()
+    if config.llm.provider == "offline":
+        from dyon.intelligent.offline_llm import OfflineChatModel
+
+        return OfflineChatModel(responder=_atdt_offline_responder)
+    return build_llm(config)
 
 
 async def generate(system_prompt: str, user_prompt: str) -> str:

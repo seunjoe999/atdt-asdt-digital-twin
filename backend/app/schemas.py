@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models import (
     AssessmentStatus,
@@ -37,8 +37,7 @@ class UserOut(BaseModel):
     full_name: str
     role: UserRole
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Courses ----------
@@ -59,8 +58,7 @@ class CourseOut(BaseModel):
     lecturer_id: int
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class EnrolRequest(BaseModel):
@@ -79,8 +77,7 @@ class DocumentOut(BaseModel):
     error: str
     uploaded_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Teaching ----------
@@ -101,8 +98,7 @@ class TeachingMaterialOut(BaseModel):
     published: bool
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Tutoring ----------
@@ -133,8 +129,7 @@ class MessageOut(BaseModel):
     citations: list
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # ---------- Examination ----------
@@ -155,8 +150,7 @@ class QuestionOut(BaseModel):
     options: list
     order: int
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuestionWithAnswerOut(QuestionOut):
@@ -175,8 +169,7 @@ class AssessmentOut(BaseModel):
     status: AssessmentStatus
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuestionEditRequest(BaseModel):
@@ -201,8 +194,7 @@ class ResponseOut(BaseModel):
     score: float | None
     feedback: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AttemptResultOut(BaseModel):
@@ -212,5 +204,4 @@ class AttemptResultOut(BaseModel):
     submitted_at: datetime | None
     responses: list[ResponseOut]
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

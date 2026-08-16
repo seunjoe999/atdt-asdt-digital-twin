@@ -5,5 +5,7 @@ venv/
 backend/.env
 backend/*.db
 backend/chroma_data/
+backend/.pytest_cache/
+*.log
 node_modules/
 .DS_Store
