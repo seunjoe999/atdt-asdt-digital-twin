@@ -1,30 +1,69 @@
-# ATDT — Agentic Teacher Digital Twin (MVP)
+# ATDT + ASDT — Digital Twin Classroom (MVP)
 
-A working implementation of the **Teaching / Tutoring / Examination** channels
-described in the ATDT thesis (Chapters 1–3), built on FastAPI + SQLAlchemy +
+A single webapp that demos both halves of the final year project together:
+a **teacher** uploads course material, which the **ATDT** (Agentic Teacher
+Digital Twin) ingests and teaches from; a **student** then learns through
+their own **ASDT** (Agentic Student Digital Twin), which tracks their
+mastery, detects gaps from real exam results, and negotiates remediation
+with ATDT's Tutoring Channel on the student's behalf — real twin-to-twin
+negotiation over HTTP, not simulated.
+
+This file covers the ATDT service specifically (Teaching / Tutoring /
+Examination channels, thesis Chapters 1–3), built on FastAPI + SQLAlchemy +
 ChromaDB, with the LLM/agent layer supplied by
 [`dyon`](https://github.com/lazy-monster/dyon) — a domain-agnostic Python
-framework for agentic digital twins.
+framework for agentic digital twins. See [`asdt/README.md`](asdt/README.md)
+for the ASDT service, and **"Run the full webapp demo" below** for how the
+two combine into one browser session with a Teacher view and a Student view.
+It's scoped as an MVP that runs **without Docker or Neo4j** so it's runnable
+today; the READMEs note exactly what to add for the fuller thesis
+architecture (Postgres, Neo4j-backed knowledge graph).
 
-This is the ATDT half of the two-system final year project — see
-[`asdt/README.md`](asdt/README.md) for the ASDT half, a separate service
-that negotiates with this one over real HTTP. It is scoped as an MVP that
-runs **without Docker or Neo4j** so it's runnable today; the README notes
-exactly what to add for the fuller thesis architecture (Postgres,
-Neo4j-backed knowledge graph).
+## Status: verified running, including in a real browser
 
-## Status: verified running
+Both services have been installed, tested, and run live end to end — not
+just reviewed. `pytest -q` passes in both. Beyond that, I drove the actual
+unified webapp in a real Chrome tab through the full demo script: registered
+a teacher, created a course, uploaded a `.txt` file and watched ATDT ingest
+it, generated and published an assessment; then registered a student,
+enrolled with the course code, asked a question through "Ask ASDT" (real
+citation came back from ATDT's RAG pipeline), deliberately answered the quiz
+wrong, watched the frontend auto-sync with ASDT and detect a gap, clicked
+"Ask ASDT for help" to negotiate remediation, and read the resulting
+Performance Report. That live run caught and fixed one real bug — see
+`frontend/index.html`'s `negotiate()`/`loadGaps()` history for a bug where
+the negotiation answer briefly appeared then got wiped by the immediately-
+following gap-list reload; it's now cached client-side and re-injected on
+every render. (Earlier in this project, the sandbox's Python install was
+also corrupted — 0-byte `python.exe` — and had to be reinstalled first;
+that's resolved too.)
 
-Both this service and ASDT have been installed, tested, and run live end to
-end (not just reviewed) — `pytest -q` passes in both, and I additionally
-started both servers and drove the full flow with real HTTP requests: ATDT's
-register → course → upload/ingest → tutor Q&A with citations → generate/
-publish/take/auto-grade an assessment, and then ASDT's sync → gap detection
-→ real negotiation against ATDT's live Tutoring Channel → performance report
-→ resync → gap resolution. Details of that run are below and in
-`asdt/README.md`. (Earlier in this project, the sandbox's Python install was
-corrupted — 0-byte `python.exe` — and had to be reinstalled first; that's
-resolved now.)
+## Run the full webapp demo
+
+Three processes, one browser tab. From the repo root, in three terminals:
+
+```bash
+# 1. ATDT (Teaching/Tutoring/Examination) on :8000
+cd backend && .venv\Scripts\activate && uvicorn app.main:app --port 8000
+
+# 2. ASDT (student twin, negotiates with ATDT) on :8001
+cd asdt/backend && .venv\Scripts\activate && uvicorn app.main:app --port 8001
+
+# 3. Serve the frontend as a real page (not file://, which most browsers
+#    block from making cross-origin fetch() calls to localhost APIs)
+cd frontend && python -m http.server 8080
+```
+
+Open `http://localhost:8080` in a browser. Register once as a **Teacher**:
+create a course, upload a PDF/DOCX/TXT, publish an assessment. Then register
+a second account as a **Student** (a different email — log out first) and
+use the course's enrolment code to enrol. The student view has four tabs:
+**Ask ASDT** (free-form Q&A, routed through the student's own twin), **My
+Learning** (sync progress, see mastery per topic, negotiate remediation on
+any detected gap), **Assessments** (take a published quiz — submitting
+auto-syncs ASDT), and **Performance Report** (the aggregated view of both).
+Both API base URLs are editable at the top of the page if you run the
+backends on different ports/hosts.
 
 ## How the pieces map to the thesis
 
@@ -97,16 +136,21 @@ provider, so it needs no key and no network.
 uvicorn app.main:app --reload
 ```
 
-Then open `frontend/index.html` directly in a browser (no build step, no
-Node needed) — it talks to `http://localhost:8000` by default (editable in
-the page). Interactive API docs are at `http://localhost:8000/docs`.
+Interactive API docs are at `http://localhost:8000/docs`. For the full
+webapp (this service + ASDT + the frontend, so you can actually click
+through the teacher and student flows), see **"Run the full webapp demo"**
+above.
 
 ## Known MVP scope cuts (documented, not hidden)
 
-- **Frontend** is a single-page vanilla JS app, not the thesis's stated
-  React/Next.js. It exercises every endpoint but isn't a polished UI. If the
-  defense needs Next.js specifically, this is the piece to rebuild first —
-  the API contract (see `/docs`) doesn't need to change.
+- **Frontend** is a single-page vanilla JS app (`frontend/index.html`), not
+  the thesis's stated React/Next.js. It now covers both ATDT and ASDT in one
+  page — a Teacher view (upload/generate/publish) and a Student view (Ask
+  ASDT, My Learning with mastery + gap negotiation, take assessments,
+  Performance Report) — and exercises every endpoint on both services, but
+  isn't a polished UI. If the defense needs Next.js specifically, this is
+  the piece to rebuild first — the API contracts (see each service's
+  `/docs`) don't need to change.
 - **Database** defaults to SQLite for zero-setup. Swap `DATABASE_URL` in
   `.env` to a `postgresql+psycopg://...` URL to match the thesis's stated
   Postgres, then `pip install psycopg[binary]`.

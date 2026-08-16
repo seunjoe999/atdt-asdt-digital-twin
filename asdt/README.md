@@ -6,6 +6,11 @@ competency gaps, and **negotiates remediation with ATDT's Tutoring Channel
 over real HTTP** — the "twin-to-twin negotiation" the ASDT thesis is built
 around, working end to end against a live ATDT instance.
 
+Paired with the top-level `frontend/index.html`, this is also the backend
+for the Student side of the unified webapp — see the top-level README's
+"Run the full webapp demo" section to click through it in a browser rather
+than via curl.
+
 ## What's implemented vs. the thesis
 
 The ASDT thesis specifies a six-layer Cross-Domain Digital Twin (CDDT)
@@ -89,6 +94,7 @@ citations) to confirm the integration itself works, not just the mocks.
 | `POST /asdt/sync` `{course_id}` | Pull fresh attempts from ATDT, recompute mastery, open/resolve gaps |
 | `GET /asdt/gaps?course_id=` | This student's gap history for a course |
 | `POST /asdt/negotiate` `{gap_event_id}` | Ask ATDT's Tutoring Channel for remediation on one gap, log the exchange |
-| `GET /asdt/report?course_id=` | The "Generate Performance Report" use case (thesis Figure 3.1) |
+| `POST /asdt/ask` `{course_id, question}` | Free-form question, not tied to a gap — the "student learns through ASDT" path; proxies to ATDT's Tutoring Channel and logs it as an `Interaction` |
+| `GET /asdt/report?course_id=` | The "Generate Performance Report" use case (thesis Figure 3.1) — mastery, gap counts, recent negotiations, recent `/ask` interactions |
 
-All four require `Authorization: Bearer <ATDT student token>`.
+All five require `Authorization: Bearer <ATDT student token>`.

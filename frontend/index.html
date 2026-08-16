@@ -2,36 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>ATDT — Agentic Teacher Digital Twin</title>
+<title>ATDT + ASDT — Digital Twin Classroom</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
   :root { color-scheme: light dark; }
-  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
-  h1 { font-size: 1.4rem; }
-  h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid #8884; padding-bottom: .25rem; }
+  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; margin-bottom: .25rem; }
+  h2 { font-size: 1.1rem; margin-top: 1.5rem; border-bottom: 1px solid #8884; padding-bottom: .25rem; }
+  h3 { font-size: .95rem; margin: 1rem 0 .25rem; }
   label { display: block; margin: .5rem 0 .2rem; font-size: .85rem; opacity: .8; }
   input, select, textarea, button { font: inherit; padding: .5rem; border-radius: 6px; border: 1px solid #8886; width: 100%; box-sizing: border-box; }
   textarea { min-height: 4rem; }
   button { cursor: pointer; width: auto; padding: .5rem 1rem; margin-top: .5rem; }
-  .row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  button.secondary { background: none; }
+  button.small { padding: .25rem .6rem; margin: 0 0 0 .5rem; font-size: .8rem; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end; }
   .row > * { flex: 1; min-width: 160px; }
   .card { border: 1px solid #8884; border-radius: 8px; padding: 1rem; margin: .75rem 0; }
   .muted { opacity: .65; font-size: .85rem; }
   .msg-user { text-align: right; }
+  .bubble { display: inline-block; padding: .5rem .75rem; border-radius: 10px; background: #8884; max-width: 85%; margin: .25rem 0; text-align: left; white-space: pre-wrap; }
   .msg-user .bubble { background: #2563eb22; }
-  .bubble { display: inline-block; padding: .5rem .75rem; border-radius: 10px; background: #8884; max-width: 80%; margin: .25rem 0; text-align: left; white-space: pre-wrap; }
   .citation { font-size: .75rem; opacity: .7; border-left: 2px solid #8886; padding-left: .5rem; margin-top: .25rem; }
-  .hidden { display: none; }
+  .hidden { display: none !important; }
   .error { color: #dc2626; }
-  .tag { display: inline-block; font-size: .7rem; padding: .1rem .4rem; border-radius: 999px; background: #8884; margin-left: .4rem; }
-  nav button { background: none; border: none; text-decoration: underline; padding: 0; margin: 0 1rem 0 0; width: auto; }
+  .tag { display: inline-block; font-size: .7rem; padding: .1rem .5rem; border-radius: 999px; background: #8884; margin-left: .4rem; }
+  .tag.gap-open { background: #dc262633; }
+  .tag.gap-negotiating { background: #d9770633; }
+  .tag.gap-resolved { background: #16a34a33; }
+  .tabs { display: flex; gap: .25rem; border-bottom: 1px solid #8884; margin: 1rem 0 0; }
+  .tabs button { border-radius: 6px 6px 0 0; border-bottom: none; opacity: .6; margin: 0; }
+  .tabs button.active { opacity: 1; font-weight: 600; border-bottom: 2px solid #2563eb; }
+  .meter { height: 10px; border-radius: 999px; background: #8883; overflow: hidden; margin: .25rem 0; }
+  .meter > div { height: 100%; background: #2563eb; }
+  .badge-role { font-size: .75rem; padding: .1rem .5rem; border-radius: 999px; background: #2563eb33; }
+  nav.crumb button { background: none; border: none; text-decoration: underline; padding: 0; margin: 0 1rem 0 0; width: auto; }
+  details.config summary { cursor: pointer; font-size: .85rem; opacity: .7; margin: .5rem 0; }
 </style>
 </head>
 <body>
-<h1>ATDT — Agentic Teacher Digital Twin</h1>
-<p class="muted">API base: <code id="api-base"></code> — change it in the box below if your backend isn't on localhost:8000.</p>
-<label>API base URL</label>
-<input id="apiBaseInput" value="http://localhost:8000" />
+<h1>ATDT + ASDT — Digital Twin Classroom</h1>
+<p class="muted">Teacher uploads a course &rarr; ATDT learns and teaches it &rarr; student learns through their own ASDT.</p>
+
+<details class="config">
+  <summary>API configuration</summary>
+  <div class="row">
+    <div><label>ATDT base URL</label><input id="atdtBaseInput" value="http://localhost:8000" /></div>
+    <div><label>ASDT base URL</label><input id="asdtBaseInput" value="http://localhost:8001" /></div>
+  </div>
+</details>
 
 <div id="auth-section" class="card">
   <h2>Sign in / register</h2>
@@ -42,19 +61,20 @@
   <div class="row hidden" id="register-extra">
     <div><label>Full name</label><input id="fullName" /></div>
     <div><label>Role</label>
-      <select id="role"><option value="lecturer">Lecturer</option><option value="student">Student</option></select>
+      <select id="role"><option value="lecturer">Teacher</option><option value="student">Student</option></select>
     </div>
   </div>
   <div class="row">
     <button onclick="login()">Log in</button>
-    <button onclick="toggleRegister()">Register instead</button>
+    <button class="secondary" onclick="toggleRegister()">Register instead</button>
   </div>
   <p id="auth-error" class="error"></p>
 </div>
 
 <div id="app-section" class="hidden">
-  <p><span id="whoami"></span> <button onclick="logout()" style="width:auto">Log out</button></p>
+  <p><span id="whoami"></span> <button class="small secondary" onclick="logout()">Log out</button></p>
 
+  <!-- ============ TEACHER ============ -->
   <div id="lecturer-view" class="hidden">
     <h2>Your courses</h2>
     <div id="course-list"></div>
@@ -67,23 +87,26 @@
     </div>
   </div>
 
+  <!-- ============ STUDENT ============ -->
   <div id="student-view" class="hidden">
     <h2>Your courses</h2>
     <div id="student-course-list"></div>
     <div class="card">
       <h2>Enrol in a course</h2>
-      <input id="enrolCode" placeholder="Enrolment code" />
+      <input id="enrolCode" placeholder="Enrolment code from your teacher" />
       <button onclick="enrol()">Enrol</button>
     </div>
   </div>
 
+  <!-- ============ COURSE DETAIL ============ -->
   <div id="course-detail" class="hidden">
+    <nav class="crumb"><button onclick="closeCourse()">&larr; back to courses</button></nav>
     <h2>Course: <span id="course-title"></span> <span class="tag" id="course-code"></span></h2>
-    <button onclick="closeCourse()">&larr; back to courses</button>
 
     <div id="lecturer-course-tools" class="hidden">
       <div class="card">
-        <h2>Upload course material (PDF / DOCX / TXT)</h2>
+        <h2>Upload course material — ATDT learns from this</h2>
+        <p class="muted">PDF, DOCX, or TXT. Once ingested, ATDT can teach, tutor, and examine on it.</p>
         <input id="docFile" type="file" />
         <button onclick="uploadDoc()">Upload &amp; ingest</button>
         <div id="doc-list"></div>
@@ -106,7 +129,7 @@
         <h2>Create an assessment</h2>
         <div class="row">
           <input id="assessTitle" placeholder="Title" />
-          <input id="assessTopic" placeholder="Topic (optional)" />
+          <input id="assessTopic" placeholder="Topic (used by ASDT for gap tracking)" />
         </div>
         <div class="row">
           <div><label>MCQs</label><input id="assessMcq" type="number" value="3" /></div>
@@ -118,37 +141,58 @@
     </div>
 
     <div id="student-course-tools" class="hidden">
-      <div class="card">
-        <h2>Ask the tutor</h2>
+      <div class="tabs">
+        <button id="tab-btn-ask" onclick="showStudentTab('ask')">Ask ASDT</button>
+        <button id="tab-btn-learning" onclick="showStudentTab('learning')">My Learning</button>
+        <button id="tab-btn-exams" onclick="showStudentTab('exams')">Assessments</button>
+        <button id="tab-btn-report" onclick="showStudentTab('report')">Performance Report</button>
+      </div>
+
+      <div id="tab-ask" class="card">
+        <p class="muted">You're talking to your own ASDT, which asks ATDT's Tutoring Channel on your behalf and logs every exchange to your learning history.</p>
         <div id="chat-log"></div>
         <textarea id="chatInput" placeholder="Ask a question about this course..."></textarea>
-        <button onclick="sendChat()">Ask</button>
+        <button onclick="sendAsk()">Ask</button>
       </div>
-      <div class="card">
-        <h2>Assessments</h2>
+
+      <div id="tab-learning" class="card hidden">
+        <button onclick="syncAsdt()">Sync my progress with ATDT</button>
+        <p id="sync-status" class="muted"></p>
+        <h3>Mastery by topic</h3>
+        <div id="mastery-list"><p class="muted">Sync to see your mastery per topic.</p></div>
+        <h3>Gaps</h3>
+        <div id="gap-list"><p class="muted">No gaps loaded yet.</p></div>
+      </div>
+
+      <div id="tab-exams" class="card hidden">
         <div id="student-assessment-list"></div>
         <div id="take-assessment-area"></div>
+      </div>
+
+      <div id="tab-report" class="card hidden">
+        <button onclick="loadReport()">Refresh report</button>
+        <div id="report-output"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-let apiBase = document.getElementById('apiBaseInput').value;
-document.getElementById('apiBaseInput').addEventListener('change', e => apiBase = e.target.value);
-document.getElementById('api-base').textContent = apiBase;
+let atdtBase = document.getElementById('atdtBaseInput').value;
+let asdtBase = document.getElementById('asdtBaseInput').value;
+document.getElementById('atdtBaseInput').addEventListener('change', e => atdtBase = e.target.value);
+document.getElementById('asdtBaseInput').addEventListener('change', e => asdtBase = e.target.value);
 
 let token = localStorage.getItem('atdt_token') || '';
 let me = null;
 let currentCourse = null;
-let conversationId = null;
 let isRegisterMode = false;
 
-async function api(path, opts = {}) {
+async function apiCall(base, path, opts = {}) {
   const headers = opts.headers || {};
   if (token) headers['Authorization'] = 'Bearer ' + token;
   if (opts.json) { headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(opts.json); }
-  const res = await fetch(apiBase + path, { ...opts, headers });
+  const res = await fetch(base + path, { ...opts, headers });
   if (!res.ok) {
     let detail = res.statusText;
     try { detail = (await res.json()).detail || detail; } catch (e) {}
@@ -157,6 +201,8 @@ async function api(path, opts = {}) {
   if (res.status === 204) return null;
   return res.json();
 }
+const atdt = (path, opts) => apiCall(atdtBase, path, opts);
+const asdt = (path, opts) => apiCall(asdtBase, path, opts);
 
 function toggleRegister() {
   isRegisterMode = !isRegisterMode;
@@ -171,13 +217,13 @@ async function login() {
   try {
     let data;
     if (isRegisterMode) {
-      data = await api('/auth/register', { method: 'POST', json: {
+      data = await atdt('/auth/register', { method: 'POST', json: {
         email, password,
         full_name: document.getElementById('fullName').value,
         role: document.getElementById('role').value,
       }});
     } else {
-      data = await api('/auth/login', { method: 'POST', json: { email, password } });
+      data = await atdt('/auth/login', { method: 'POST', json: { email, password } });
     }
     token = data.access_token;
     localStorage.setItem('atdt_token', token);
@@ -192,30 +238,31 @@ function logout() {
   localStorage.removeItem('atdt_token');
   document.getElementById('auth-section').classList.remove('hidden');
   document.getElementById('app-section').classList.add('hidden');
+  document.getElementById('course-detail').classList.add('hidden');
 }
 
 async function afterLogin() {
-  me = await api('/auth/me');
+  me = await atdt('/auth/me');
   document.getElementById('auth-section').classList.add('hidden');
   document.getElementById('app-section').classList.remove('hidden');
-  document.getElementById('whoami').textContent = `${me.full_name} (${me.role})`;
+  document.getElementById('whoami').innerHTML = `${me.full_name} <span class="badge-role">${me.role === 'lecturer' ? 'Teacher' : 'Student'}</span>`;
   document.getElementById('lecturer-view').classList.toggle('hidden', me.role !== 'lecturer');
   document.getElementById('student-view').classList.toggle('hidden', me.role !== 'student');
   if (me.role === 'lecturer') loadLecturerCourses(); else loadStudentCourses();
 }
 
 async function loadLecturerCourses() {
-  const courses = await api('/courses');
+  const courses = await atdt('/courses');
   const el = document.getElementById('course-list');
   el.innerHTML = courses.map(c =>
-    `<div class="card"><b>${c.title}</b> <span class="tag">${c.enrolment_code}</span>
-     <p class="muted">${c.description || ''}</p>
+    `<div class="card"><b>${escapeHtml(c.title)}</b> <span class="tag">code: ${c.enrolment_code}</span>
+     <p class="muted">${escapeHtml(c.description || '')}</p>
      <button onclick="openCourse(${c.id})">Open</button></div>`
   ).join('') || '<p class="muted">No courses yet.</p>';
 }
 
 async function createCourse() {
-  await api('/courses', { method: 'POST', json: {
+  await atdt('/courses', { method: 'POST', json: {
     title: document.getElementById('newCourseTitle').value,
     subject_area: document.getElementById('newCourseSubject').value,
     description: document.getElementById('newCourseDesc').value,
@@ -224,29 +271,37 @@ async function createCourse() {
 }
 
 async function loadStudentCourses() {
-  const courses = await api('/courses');
+  const courses = await atdt('/courses');
   const el = document.getElementById('student-course-list');
   el.innerHTML = courses.map(c =>
-    `<div class="card"><b>${c.title}</b><p class="muted">${c.description || ''}</p>
+    `<div class="card"><b>${escapeHtml(c.title)}</b><p class="muted">${escapeHtml(c.description || '')}</p>
      <button onclick="openCourse(${c.id})">Open</button></div>`
   ).join('') || '<p class="muted">Not enrolled in any course yet.</p>';
 }
 
 async function enrol() {
-  await api('/courses/enrol', { method: 'POST', json: { enrolment_code: document.getElementById('enrolCode').value } });
+  await atdt('/courses/enrol', { method: 'POST', json: { enrolment_code: document.getElementById('enrolCode').value } });
   loadStudentCourses();
 }
 
 async function openCourse(id) {
-  currentCourse = await api(`/courses/${id}`);
-  conversationId = null;
+  currentCourse = await atdt(`/courses/${id}`);
   document.getElementById('course-detail').classList.remove('hidden');
   document.getElementById('course-title').textContent = currentCourse.title;
   document.getElementById('course-code').textContent = currentCourse.enrolment_code;
   document.getElementById('lecturer-course-tools').classList.toggle('hidden', me.role !== 'lecturer');
   document.getElementById('student-course-tools').classList.toggle('hidden', me.role !== 'student');
-  if (me.role === 'lecturer') { loadDocs(); loadAssessments(); }
-  else { document.getElementById('chat-log').innerHTML = ''; loadStudentAssessments(); }
+  if (me.role === 'lecturer') {
+    loadDocs(); loadAssessments();
+  } else {
+    document.getElementById('chat-log').innerHTML = '';
+    lastNegotiationByGap = {};
+    document.getElementById('mastery-list').innerHTML = '<p class="muted">Sync to see your mastery per topic.</p>';
+    document.getElementById('gap-list').innerHTML = '<p class="muted">No gaps loaded yet.</p>';
+    document.getElementById('report-output').innerHTML = '';
+    showStudentTab('ask');
+    loadStudentAssessments();
+  }
 }
 
 function closeCourse() {
@@ -254,10 +309,21 @@ function closeCourse() {
   document.getElementById('course-detail').classList.add('hidden');
 }
 
+function showStudentTab(name) {
+  ['ask', 'learning', 'exams', 'report'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
+    document.getElementById(`tab-btn-${t}`).classList.toggle('active', t === name);
+  });
+  if (name === 'report') loadReport();
+  if (name === 'learning') loadGaps();
+}
+
+// ---------- Teacher: documents, materials, assessments ----------
+
 async function loadDocs() {
-  const docs = await api(`/courses/${currentCourse.id}/documents`);
+  const docs = await atdt(`/courses/${currentCourse.id}/documents`);
   document.getElementById('doc-list').innerHTML = docs.map(d =>
-    `<div class="muted">${d.filename} — ${d.status}${d.status === 'ready' ? ` (${d.chunk_count} chunks)` : ''}</div>`
+    `<div class="muted">${escapeHtml(d.filename)} — ${d.status}${d.status === 'ready' ? ` (${d.chunk_count} chunks)` : ''}${d.status === 'failed' ? `: ${escapeHtml(d.error)}` : ''}</div>`
   ).join('');
 }
 
@@ -267,16 +333,17 @@ async function uploadDoc() {
   const form = new FormData();
   form.append('file', file);
   const headers = { Authorization: 'Bearer ' + token };
-  const res = await fetch(`${apiBase}/courses/${currentCourse.id}/documents`, { method: 'POST', headers, body: form });
+  const res = await fetch(`${atdtBase}/courses/${currentCourse.id}/documents`, { method: 'POST', headers, body: form });
   if (!res.ok) { alert('Upload failed'); return; }
-  setTimeout(loadDocs, 1000);
   loadDocs();
+  setTimeout(loadDocs, 1500);
+  setTimeout(loadDocs, 4000);
 }
 
 async function generateMaterial() {
   const out = document.getElementById('material-output');
   out.innerHTML = '<p class="muted">Generating...</p>';
-  const material = await api(`/courses/${currentCourse.id}/teaching/materials`, { method: 'POST', json: {
+  const material = await atdt(`/courses/${currentCourse.id}/teaching/materials`, { method: 'POST', json: {
     type: document.getElementById('materialType').value,
     topic: document.getElementById('materialTopic').value,
   }});
@@ -284,7 +351,7 @@ async function generateMaterial() {
 }
 
 async function createAssessment() {
-  const a = await api(`/courses/${currentCourse.id}/examination/assessments`, { method: 'POST', json: {
+  await atdt(`/courses/${currentCourse.id}/examination/assessments`, { method: 'POST', json: {
     title: document.getElementById('assessTitle').value,
     topic: document.getElementById('assessTopic').value,
     mcq_count: parseInt(document.getElementById('assessMcq').value || '0'),
@@ -294,33 +361,112 @@ async function createAssessment() {
 }
 
 async function loadAssessments() {
-  const list = await api(`/courses/${currentCourse.id}/examination/assessments`);
+  const list = await atdt(`/courses/${currentCourse.id}/examination/assessments`);
   const el = document.getElementById('assessment-list');
-  el.innerHTML = await Promise.all(list.map(async a => {
-    const questions = await api(`/courses/${currentCourse.id}/examination/assessments/${a.id}/review`);
+  const rows = await Promise.all(list.map(async a => {
+    const questions = await atdt(`/courses/${currentCourse.id}/examination/assessments/${a.id}/review`);
     const qhtml = questions.map(q => `<li>[${q.type}] ${escapeHtml(q.text)}</li>`).join('');
-    return `<div class="card"><b>${a.title}</b> <span class="tag">${a.status}</span>
+    return `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="tag">${escapeHtml(a.topic || 'no topic')}</span> <span class="tag">${a.status}</span>
       <ul>${qhtml}</ul>
       ${a.status === 'draft' ? `<button onclick="publishAssessment(${a.id})">Publish</button>` : ''}</div>`;
-  })).then(rows => rows.join(''));
+  }));
+  el.innerHTML = rows.join('');
 }
 
 async function publishAssessment(id) {
-  await api(`/courses/${currentCourse.id}/examination/assessments/${id}/publish`, { method: 'POST' });
+  await atdt(`/courses/${currentCourse.id}/examination/assessments/${id}/publish`, { method: 'POST' });
   loadAssessments();
 }
 
+// ---------- Student: Ask ASDT ----------
+
+async function sendAsk() {
+  const input = document.getElementById('chatInput');
+  const question = input.value.trim();
+  if (!question) return;
+  const log = document.getElementById('chat-log');
+  log.innerHTML += `<div class="msg-user"><div class="bubble">${escapeHtml(question)}</div></div>`;
+  input.value = '';
+  const res = await asdt('/asdt/ask', { method: 'POST', json: { course_id: currentCourse.id, question } });
+  const citations = (res.atdt_citations || []).map(c =>
+    `<div class="citation">${escapeHtml(c.source_document)} (p.${c.page_number ?? '-'}): ${escapeHtml(c.excerpt)}</div>`
+  ).join('');
+  log.innerHTML += `<div><div class="bubble">${escapeHtml(res.atdt_answer)}</div>${citations}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// ---------- Student: My Learning (sync, mastery, gaps, negotiate) ----------
+
+async function syncAsdt() {
+  const status = document.getElementById('sync-status');
+  status.textContent = 'Syncing with ATDT...';
+  const res = await asdt('/asdt/sync', { method: 'POST', json: { course_id: currentCourse.id } });
+  status.textContent = `Synced. ${res.new_gaps.length} new gap(s), ${res.resolved_gaps.length} resolved.`;
+  renderMastery(res.knowledge_states);
+  loadGaps();
+}
+
+function renderMastery(states) {
+  const el = document.getElementById('mastery-list');
+  if (!states.length) { el.innerHTML = '<p class="muted">No graded assessments yet.</p>'; return; }
+  el.innerHTML = states.map(s => `
+    <div>
+      <div class="row" style="align-items:center">
+        <span>${escapeHtml(s.topic)}</span>
+        <span class="muted" style="flex:0 0 auto">${Math.round(s.mastery * 100)}%</span>
+      </div>
+      <div class="meter"><div style="width:${Math.round(s.mastery * 100)}%"></div></div>
+    </div>`).join('');
+}
+
+// Negotiation results are cached client-side by gap id and re-injected on
+// every loadGaps() render, since that call fully replaces #gap-list (and
+// would otherwise silently wipe the answer that negotiate() just showed).
+let lastNegotiationByGap = {};
+
+function renderNegotiation(gapId) {
+  const record = lastNegotiationByGap[gapId];
+  if (!record) return '';
+  const citations = (record.atdt_citations || []).map(c =>
+    `<div class="citation">${escapeHtml(c.source_document)} (p.${c.page_number ?? '-'}): ${escapeHtml(c.excerpt)}</div>`
+  ).join('');
+  return `<div class="bubble">${escapeHtml(record.atdt_answer)}</div>${citations}`;
+}
+
+async function loadGaps() {
+  const gaps = await asdt(`/asdt/gaps?course_id=${currentCourse.id}`);
+  const el = document.getElementById('gap-list');
+  el.innerHTML = gaps.map(g => `
+    <div class="card">
+      <b>${escapeHtml(g.topic)}</b> <span class="tag gap-${g.status}">${g.status}</span>
+      <span class="muted">severity ${(g.severity * 100).toFixed(0)}%</span>
+      ${g.status !== 'resolved' ? `<button class="small" onclick="negotiate(${g.id})">Ask ASDT for help</button>` : ''}
+      <div id="negotiation-${g.id}">${renderNegotiation(g.id)}</div>
+    </div>`).join('') || '<p class="muted">No gaps detected. Sync after taking an assessment.</p>';
+}
+
+async function negotiate(gapId) {
+  const target = document.getElementById(`negotiation-${gapId}`);
+  target.innerHTML = '<p class="muted">Negotiating with ATDT...</p>';
+  const record = await asdt('/asdt/negotiate', { method: 'POST', json: { gap_event_id: gapId } });
+  lastNegotiationByGap[gapId] = record;
+  loadGaps();
+}
+
+// ---------- Student: Assessments ----------
+
 async function loadStudentAssessments() {
-  const list = await api(`/courses/${currentCourse.id}/examination/assessments/published`);
+  const list = await atdt(`/courses/${currentCourse.id}/examination/assessments/published`);
   const el = document.getElementById('student-assessment-list');
   el.innerHTML = list.map(a =>
-    `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="muted">(${a.mcq_count} MCQ, ${a.saq_count} SAQ, ${a.time_limit_minutes} min)</span>
+    `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="tag">${escapeHtml(a.topic || 'no topic')}</span>
+     <span class="muted">(${a.mcq_count} MCQ, ${a.saq_count} SAQ, ${a.time_limit_minutes} min)</span>
      <button onclick="loadTakeAssessment(${a.id})">Take</button></div>`
   ).join('') || '<p class="muted">No published assessments yet.</p>';
 }
 
 async function loadTakeAssessment(id) {
-  const questions = await api(`/courses/${currentCourse.id}/examination/assessments/${id}/take`);
+  const questions = await atdt(`/courses/${currentCourse.id}/examination/assessments/${id}/take`);
   const area = document.getElementById('take-assessment-area');
   area.innerHTML = questions.map(q => {
     if (q.type === 'mcq') {
@@ -338,31 +484,44 @@ async function submitAssessment(assessmentId, questionIds) {
     const ta = document.getElementById(`ans${qid}`);
     return { question_id: qid, answer: ta ? ta.value : '' };
   });
-  const result = await api(`/courses/${currentCourse.id}/examination/assessments/${assessmentId}/submit`, {
+  const result = await atdt(`/courses/${currentCourse.id}/examination/assessments/${assessmentId}/submit`, {
     method: 'POST', json: { answers },
   });
   document.getElementById('result').innerHTML =
     `<div class="card"><b>Score: ${result.total_score}%</b><ul>` +
     result.responses.map(r => `<li>Q${r.question_id}: ${r.score} — ${escapeHtml(r.feedback)}</li>`).join('') +
-    `</ul></div>`;
+    `</ul><p class="muted">Syncing with ASDT...</p></div>`;
+
+  // The moment a result exists, the student's twin should know about it —
+  // this is the "student uses ASDT to learn" loop closing automatically.
+  try {
+    const sync = await asdt('/asdt/sync', { method: 'POST', json: { course_id: currentCourse.id } });
+    document.getElementById('result').innerHTML +=
+      `<p class="muted">ASDT synced: ${sync.new_gaps.length} new gap(s) detected, ${sync.resolved_gaps.length} resolved. See "My Learning".</p>`;
+  } catch (e) {
+    document.getElementById('result').innerHTML += `<p class="error">ASDT sync failed: ${escapeHtml(e.message)}</p>`;
+  }
 }
 
-async function sendChat() {
-  const input = document.getElementById('chatInput');
-  const question = input.value.trim();
-  if (!question) return;
-  const log = document.getElementById('chat-log');
-  log.innerHTML += `<div class="msg-user"><div class="bubble">${escapeHtml(question)}</div></div>`;
-  input.value = '';
-  const res = await api(`/courses/${currentCourse.id}/tutoring/query`, { method: 'POST', json: {
-    question, conversation_id: conversationId,
-  }});
-  conversationId = res.conversation_id;
-  const citations = res.citations.map(c =>
-    `<div class="citation">${escapeHtml(c.source_document)} (p.${c.page_number ?? '-'}): ${escapeHtml(c.excerpt)}</div>`
-  ).join('');
-  log.innerHTML += `<div><div class="bubble">${escapeHtml(res.answer)}</div>${citations}</div>`;
-  log.scrollTop = log.scrollHeight;
+// ---------- Student: Performance Report ----------
+
+async function loadReport() {
+  const el = document.getElementById('report-output');
+  el.innerHTML = '<p class="muted">Loading...</p>';
+  const report = await asdt(`/asdt/report?course_id=${currentCourse.id}`);
+  el.innerHTML = `
+    <div class="card">
+      <b>Overall mastery: ${Math.round(report.overall_mastery * 100)}%</b>
+      <div class="meter"><div style="width:${Math.round(report.overall_mastery * 100)}%"></div></div>
+      <p class="muted">${report.open_gaps} open · ${report.negotiating_gaps} negotiating · ${report.resolved_gaps} resolved</p>
+    </div>
+    <h3>Topics</h3>
+    ${report.topics.map(t => `<div>${escapeHtml(t.topic)}: ${Math.round(t.mastery * 100)}% (${t.sample_count} attempt(s))</div>`).join('') || '<p class="muted">None yet.</p>'}
+    <h3>Recent negotiations</h3>
+    ${report.recent_negotiations.map(n => `<div class="card"><span class="muted">${new Date(n.created_at).toLocaleString()}</span><div class="bubble">${escapeHtml(n.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
+    <h3>Recent questions asked</h3>
+    ${report.recent_interactions.map(i => `<div class="card"><span class="muted">${new Date(i.created_at).toLocaleString()}</span><p><b>Q:</b> ${escapeHtml(i.question)}</p><div class="bubble">${escapeHtml(i.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
+  `;
 }
 
 function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }

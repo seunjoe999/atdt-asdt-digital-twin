@@ -52,6 +52,22 @@ class NegotiationRecordOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AskRequest(BaseModel):
+    course_id: int
+    question: str
+
+
+class InteractionOut(BaseModel):
+    id: int
+    course_id: int
+    question: str
+    atdt_answer: str
+    atdt_citations: list
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PerformanceReport(BaseModel):
     course_id: int
     student_email: str
@@ -61,3 +77,4 @@ class PerformanceReport(BaseModel):
     negotiating_gaps: int
     resolved_gaps: int
     recent_negotiations: list[NegotiationRecordOut]
+    recent_interactions: list[InteractionOut]

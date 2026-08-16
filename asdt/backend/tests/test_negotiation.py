@@ -105,6 +105,35 @@ def test_gap_detection_negotiation_and_resolution(client, monkeypatch):
     assert report["overall_mastery"] == 0.85
 
 
+def test_ask_logs_interaction_and_shows_in_report(client, monkeypatch):
+    monkeypatch.setattr(atdt_client, "whoami", _fake_whoami)
+
+    async def fake_ask_tutor(token, course_id, question):
+        return {
+            "conversation_id": 5,
+            "answer": "A binary search tree keeps left < node < right at every node.",
+            "citations": [{"source_document": "notes.pdf", "page_number": 1, "excerpt": "..."}],
+        }
+
+    monkeypatch.setattr(atdt_client, "ask_tutor", fake_ask_tutor)
+
+    r = client.post(
+        "/asdt/ask",
+        json={"course_id": 2, "question": "What is a binary search tree?"},
+        headers=_auth_header(),
+    )
+    assert r.status_code == 200, r.text
+    interaction = r.json()
+    assert interaction["question"] == "What is a binary search tree?"
+    assert interaction["atdt_citations"]
+
+    r = client.get("/asdt/report", params={"course_id": 2}, headers=_auth_header())
+    assert r.status_code == 200, r.text
+    report = r.json()
+    assert len(report["recent_interactions"]) == 1
+    assert report["recent_interactions"][0]["question"] == "What is a binary search tree?"
+
+
 def test_health(client):
     r = client.get("/health")
     assert r.status_code == 200

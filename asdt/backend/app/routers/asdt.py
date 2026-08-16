@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 
 from app import atdt_client, gap_analysis
 from app.database import get_db
-from app.models import GapEvent, GapStatus, KnowledgeState, NegotiationRecord, Student, now_utc
+from app.models import GapEvent, GapStatus, Interaction, KnowledgeState, NegotiationRecord, Student, now_utc
 from app.schemas import (
+    AskRequest,
     GapEventOut,
+    InteractionOut,
     KnowledgeStateOut,
     NegotiateRequest,
     NegotiationRecordOut,
@@ -171,6 +173,35 @@ async def negotiate(
     return record
 
 
+@router.post("/ask", response_model=InteractionOut)
+async def ask(
+    payload: AskRequest,
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    """The primary "student learns through ASDT" path: free-form questions
+    that aren't tied to a detected gap. ASDT still proxies to ATDT's
+    Tutoring Channel (it has no tutoring intelligence of its own — ATDT owns
+    the course material and the RAG pipeline), but the student only ever
+    talks to their own twin, and every exchange is logged to their learning
+    history the same way a gap negotiation is.
+    """
+    student, token = await _resolve_student(db, credentials)
+    atdt_response = await atdt_client.ask_tutor(token, payload.course_id, payload.question)
+
+    interaction = Interaction(
+        student_id=student.id,
+        course_id=payload.course_id,
+        question=payload.question,
+        atdt_answer=atdt_response["answer"],
+        atdt_citations=atdt_response.get("citations", []),
+    )
+    db.add(interaction)
+    db.commit()
+    db.refresh(interaction)
+    return interaction
+
+
 @router.get("/report", response_model=PerformanceReport)
 async def performance_report(
     course_id: int,
@@ -211,6 +242,14 @@ async def performance_report(
         else []
     )
 
+    recent_interactions = (
+        db.query(Interaction)
+        .filter(Interaction.student_id == student.id, Interaction.course_id == course_id)
+        .order_by(Interaction.created_at.desc())
+        .limit(10)
+        .all()
+    )
+
     return PerformanceReport(
         course_id=course_id,
         student_email=student.email,
@@ -220,4 +259,5 @@ async def performance_report(
         negotiating_gaps=negotiating_count,
         resolved_gaps=resolved_count,
         recent_negotiations=[NegotiationRecordOut.model_validate(n) for n in recent_negotiations],
+        recent_interactions=[InteractionOut.model_validate(i) for i in recent_interactions],
     )

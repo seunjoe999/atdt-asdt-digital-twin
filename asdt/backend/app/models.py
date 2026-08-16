@@ -99,3 +99,22 @@ class NegotiationRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
 
     gap_event: Mapped["GapEvent"] = relationship(back_populates="negotiations")
+
+
+class Interaction(Base):
+    """A free-form question the student asked *through* ASDT rather than a
+    gap-triggered negotiation — the "student uses ASDT to learn" path: the
+    student never talks to ATDT directly, ASDT proxies the question to
+    ATDT's Tutoring Channel and logs it here so it shows up in the same
+    activity history as formal negotiations.
+    """
+
+    __tablename__ = "interactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey("students.id"), nullable=False)
+    course_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    question: Mapped[str] = mapped_column(Text, nullable=False)
+    atdt_answer: Mapped[str] = mapped_column(Text, nullable=False)
+    atdt_citations: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
