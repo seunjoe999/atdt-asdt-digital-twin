@@ -43,12 +43,13 @@
 <body>
 <h1>ATDT + ASDT — Digital Twin Classroom</h1>
 <p class="muted">Teacher uploads a course &rarr; ATDT learns and teaches it &rarr; student learns through their own ASDT.</p>
+<p class="muted">Backends run on Render's free tier and sleep after ~15 min idle &mdash; the first request after a while can take 30&ndash;60s to wake up. That's normal, not a bug.</p>
 
 <details class="config">
   <summary>API configuration</summary>
   <div class="row">
-    <div><label>ATDT base URL</label><input id="atdtBaseInput" value="http://localhost:8000" /></div>
-    <div><label>ASDT base URL</label><input id="asdtBaseInput" value="http://localhost:8001" /></div>
+    <div><label>ATDT base URL</label><input id="atdtBaseInput" value="https://atdt-backend.onrender.com" /></div>
+    <div><label>ASDT base URL</label><input id="asdtBaseInput" value="https://asdt-backend.onrender.com" /></div>
   </div>
 </details>
 
