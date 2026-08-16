@@ -19,6 +19,7 @@ from app.schemas import (
     AssessmentCreateRequest,
     AssessmentOut,
     AttemptResultOut,
+    MyAttemptOut,
     QuestionEditRequest,
     QuestionOut,
     QuestionWithAnswerOut,
@@ -270,3 +271,37 @@ def get_results(
     if not attempt or attempt.student_id != student.id:
         raise HTTPException(status_code=404, detail="Attempt not found")
     return attempt
+
+
+@router.get("/my-attempts", response_model=list[MyAttemptOut])
+def my_attempts(course_id: int, db: Session = Depends(get_db), student: User = Depends(require_student)):
+    """A student's own submitted attempts in this course, topic included.
+
+    This is the read surface ASDT (or any other consumer acting on the
+    student's behalf, using the student's own bearer token) uses to build a
+    per-topic mastery model — the "Acquisition and Tracking Layer" of the
+    ASDT thesis's six-layer CDDT architecture (Section 3.4.1).
+    """
+    course = _get_course(db, course_id, student)
+    rows = (
+        db.query(Attempt, Assessment)
+        .join(Assessment, Attempt.assessment_id == Assessment.id)
+        .filter(
+            Attempt.student_id == student.id,
+            Assessment.course_id == course.id,
+            Attempt.submitted_at.isnot(None),
+        )
+        .order_by(Attempt.submitted_at)
+        .all()
+    )
+    return [
+        MyAttemptOut(
+            id=attempt.id,
+            assessment_id=assessment.id,
+            assessment_title=assessment.title,
+            topic=assessment.topic,
+            total_score=attempt.total_score,
+            submitted_at=attempt.submitted_at,
+        )
+        for attempt, assessment in rows
+    ]

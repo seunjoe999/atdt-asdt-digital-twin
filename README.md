@@ -6,20 +6,25 @@ ChromaDB, with the LLM/agent layer supplied by
 [`dyon`](https://github.com/lazy-monster/dyon) — a domain-agnostic Python
 framework for agentic digital twins.
 
-This is the ATDT half of the two-system final year project (ATDT + ASDT). It
-is scoped as an MVP that runs **without Docker or Neo4j** so it's runnable
-today; the README notes exactly what to add for the fuller thesis
-architecture (Postgres, Neo4j-backed knowledge graph) and for ASDT.
+This is the ATDT half of the two-system final year project — see
+[`asdt/README.md`](asdt/README.md) for the ASDT half, a separate service
+that negotiates with this one over real HTTP. It is scoped as an MVP that
+runs **without Docker or Neo4j** so it's runnable today; the README notes
+exactly what to add for the fuller thesis architecture (Postgres,
+Neo4j-backed knowledge graph).
 
-## ⚠️ Not yet run in this environment
+## Status: verified running
 
-I could not execute or test this code myself: the sandbox this was built in
-has no working Python interpreter (the installed Python 3.11 executable is
-corrupted) and no Node.js. Everything below follows FastAPI/SQLAlchemy/
-ChromaDB/dyon's documented APIs carefully, and a smoke test (`tests/
-test_smoke.py`) exercises the full flow end to end using dyon's offline LLM
-provider (no key needed). **Please run the smoke test first** after setup —
-that's the fastest way to catch anything that slipped through review.
+Both this service and ASDT have been installed, tested, and run live end to
+end (not just reviewed) — `pytest -q` passes in both, and I additionally
+started both servers and drove the full flow with real HTTP requests: ATDT's
+register → course → upload/ingest → tutor Q&A with citations → generate/
+publish/take/auto-grade an assessment, and then ASDT's sync → gap detection
+→ real negotiation against ATDT's live Tutoring Channel → performance report
+→ resync → gap resolution. Details of that run are below and in
+`asdt/README.md`. (Earlier in this project, the sandbox's Python install was
+corrupted — 0-byte `python.exe` — and had to be reinstalled first; that's
+resolved now.)
 
 ## How the pieces map to the thesis
 
@@ -115,15 +120,15 @@ the page). Interactive API docs are at `http://localhost:8000/docs`.
   actors; per-course granular permissions beyond "own course" /
   "enrolled student" are out of scope.
 
-## Next: ASDT (Agentic Student Digital Twin)
+## ASDT (Agentic Student Digital Twin)
 
-Not started yet. Per the ASDT abstract, it's a separate twin representing
-*the student* — reasoning about their learning gaps and negotiating with
-ATDT (e.g., requesting remediation material, flagging a misconception)
-rather than just consuming ATDT's channels passively. The natural interface
-point is `app/rag/assessment_agent.py::grade_saq`'s per-question feedback and
-`Response.score` — an ASDT twin would read a student's `Attempt`/`Response`
-history via a new read API on this backend and reason over it independently.
-Recommend starting that as its own service (own repo or `asdt/` sibling
-directory) that calls ATDT's API rather than importing its code directly,
-matching the thesis's "twin-to-twin negotiation" framing.
+Built as a separate service at [`asdt/`](asdt/) — its own FastAPI app, own
+database, own venv, talking to this service only over HTTP (no shared code,
+no shared secret). It reads a student's own attempt history via the new
+`GET /courses/{id}/examination/my-attempts` endpoint added here, models
+per-topic mastery, detects gaps, and negotiates remediation by calling this
+service's Tutoring Channel with the student's own bearer token — real
+twin-to-twin negotiation, verified against a live instance of this service.
+See `asdt/README.md` for the full CDDT-layer mapping and documented scope
+cuts (no Knowledge Graph yet, no ranked multi-candidate bidding, no NERDC/
+Pidgin localisation).

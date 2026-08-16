@@ -205,3 +205,17 @@ class AttemptResultOut(BaseModel):
     responses: list[ResponseOut]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class MyAttemptOut(BaseModel):
+    """A student's own attempt, with the assessment's topic folded in so a
+    consumer (e.g. ASDT) can compute per-topic mastery without a second call
+    per assessment.
+    """
+
+    id: int
+    assessment_id: int
+    assessment_title: str
+    topic: str
+    total_score: float | None
+    submitted_at: datetime | None
