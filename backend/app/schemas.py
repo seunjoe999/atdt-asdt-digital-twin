@@ -1,0 +1,216 @@
+from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, Field
+
+from app.models import (
+    AssessmentStatus,
+    DocumentStatus,
+    MaterialType,
+    MessageRole,
+    QuestionType,
+    UserRole,
+)
+
+# ---------- Auth ----------
+
+
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=8)
+    full_name: str
+    role: UserRole
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    full_name: str
+    role: UserRole
+
+    class Config:
+        from_attributes = True
+
+
+# ---------- Courses ----------
+
+
+class CourseCreate(BaseModel):
+    title: str
+    description: str = ""
+    subject_area: str = ""
+
+
+class CourseOut(BaseModel):
+    id: int
+    title: str
+    description: str
+    subject_area: str
+    enrolment_code: str
+    lecturer_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class EnrolRequest(BaseModel):
+    enrolment_code: str
+
+
+# ---------- Documents ----------
+
+
+class DocumentOut(BaseModel):
+    id: int
+    course_id: int
+    filename: str
+    status: DocumentStatus
+    chunk_count: int
+    error: str
+    uploaded_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ---------- Teaching ----------
+
+
+class TeachingMaterialRequest(BaseModel):
+    type: MaterialType
+    topic: str = ""
+    instructions: str = ""
+
+
+class TeachingMaterialOut(BaseModel):
+    id: int
+    course_id: int
+    type: MaterialType
+    topic: str
+    content: str
+    published: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ---------- Tutoring ----------
+
+
+class TutorQuery(BaseModel):
+    question: str
+    conversation_id: int | None = None
+
+
+class Citation(BaseModel):
+    source_document: str
+    page_number: int | None = None
+    chunk_index: int | None = None
+    excerpt: str
+
+
+class TutorAnswer(BaseModel):
+    conversation_id: int
+    answer: str
+    citations: list[Citation]
+
+
+class MessageOut(BaseModel):
+    id: int
+    role: MessageRole
+    content: str
+    citations: list
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# ---------- Examination ----------
+
+
+class AssessmentCreateRequest(BaseModel):
+    title: str
+    topic: str = ""
+    mcq_count: int = 5
+    saq_count: int = 2
+    time_limit_minutes: int = 30
+
+
+class QuestionOut(BaseModel):
+    id: int
+    type: QuestionType
+    text: str
+    options: list
+    order: int
+
+    class Config:
+        from_attributes = True
+
+
+class QuestionWithAnswerOut(QuestionOut):
+    correct_answer: str
+    rubric: str
+
+
+class AssessmentOut(BaseModel):
+    id: int
+    course_id: int
+    title: str
+    topic: str
+    mcq_count: int
+    saq_count: int
+    time_limit_minutes: int
+    status: AssessmentStatus
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class QuestionEditRequest(BaseModel):
+    text: str | None = None
+    options: list | None = None
+    correct_answer: str | None = None
+    rubric: str | None = None
+
+
+class SubmitAnswer(BaseModel):
+    question_id: int
+    answer: str
+
+
+class SubmitAttemptRequest(BaseModel):
+    answers: list[SubmitAnswer]
+
+
+class ResponseOut(BaseModel):
+    question_id: int
+    student_answer: str
+    score: float | None
+    feedback: str
+
+    class Config:
+        from_attributes = True
+
+
+class AttemptResultOut(BaseModel):
+    id: int
+    assessment_id: int
+    total_score: float | None
+    submitted_at: datetime | None
+    responses: list[ResponseOut]
+
+    class Config:
+        from_attributes = True

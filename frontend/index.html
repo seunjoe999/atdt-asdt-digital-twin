@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ATDT — Agentic Teacher Digital Twin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  h1 { font-size: 1.4rem; }
+  h2 { font-size: 1.1rem; margin-top: 2rem; border-bottom: 1px solid #8884; padding-bottom: .25rem; }
+  label { display: block; margin: .5rem 0 .2rem; font-size: .85rem; opacity: .8; }
+  input, select, textarea, button { font: inherit; padding: .5rem; border-radius: 6px; border: 1px solid #8886; width: 100%; box-sizing: border-box; }
+  textarea { min-height: 4rem; }
+  button { cursor: pointer; width: auto; padding: .5rem 1rem; margin-top: .5rem; }
+  .row { display: flex; gap: .5rem; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 160px; }
+  .card { border: 1px solid #8884; border-radius: 8px; padding: 1rem; margin: .75rem 0; }
+  .muted { opacity: .65; font-size: .85rem; }
+  .msg-user { text-align: right; }
+  .msg-user .bubble { background: #2563eb22; }
+  .bubble { display: inline-block; padding: .5rem .75rem; border-radius: 10px; background: #8884; max-width: 80%; margin: .25rem 0; text-align: left; white-space: pre-wrap; }
+  .citation { font-size: .75rem; opacity: .7; border-left: 2px solid #8886; padding-left: .5rem; margin-top: .25rem; }
+  .hidden { display: none; }
+  .error { color: #dc2626; }
+  .tag { display: inline-block; font-size: .7rem; padding: .1rem .4rem; border-radius: 999px; background: #8884; margin-left: .4rem; }
+  nav button { background: none; border: none; text-decoration: underline; padding: 0; margin: 0 1rem 0 0; width: auto; }
+</style>
+</head>
+<body>
+<h1>ATDT — Agentic Teacher Digital Twin</h1>
+<p class="muted">API base: <code id="api-base"></code> — change it in the box below if your backend isn't on localhost:8000.</p>
+<label>API base URL</label>
+<input id="apiBaseInput" value="http://localhost:8000" />
+
+<div id="auth-section" class="card">
+  <h2>Sign in / register</h2>
+  <div class="row">
+    <div><label>Email</label><input id="email" type="email" /></div>
+    <div><label>Password</label><input id="password" type="password" /></div>
+  </div>
+  <div class="row hidden" id="register-extra">
+    <div><label>Full name</label><input id="fullName" /></div>
+    <div><label>Role</label>
+      <select id="role"><option value="lecturer">Lecturer</option><option value="student">Student</option></select>
+    </div>
+  </div>
+  <div class="row">
+    <button onclick="login()">Log in</button>
+    <button onclick="toggleRegister()">Register instead</button>
+  </div>
+  <p id="auth-error" class="error"></p>
+</div>
+
+<div id="app-section" class="hidden">
+  <p><span id="whoami"></span> <button onclick="logout()" style="width:auto">Log out</button></p>
+
+  <div id="lecturer-view" class="hidden">
+    <h2>Your courses</h2>
+    <div id="course-list"></div>
+    <div class="card">
+      <h2>Create a course</h2>
+      <input id="newCourseTitle" placeholder="Course title" />
+      <input id="newCourseSubject" placeholder="Subject area" />
+      <textarea id="newCourseDesc" placeholder="Description"></textarea>
+      <button onclick="createCourse()">Create</button>
+    </div>
+  </div>
+
+  <div id="student-view" class="hidden">
+    <h2>Your courses</h2>
+    <div id="student-course-list"></div>
+    <div class="card">
+      <h2>Enrol in a course</h2>
+      <input id="enrolCode" placeholder="Enrolment code" />
+      <button onclick="enrol()">Enrol</button>
+    </div>
+  </div>
+
+  <div id="course-detail" class="hidden">
+    <h2>Course: <span id="course-title"></span> <span class="tag" id="course-code"></span></h2>
+    <button onclick="closeCourse()">&larr; back to courses</button>
+
+    <div id="lecturer-course-tools" class="hidden">
+      <div class="card">
+        <h2>Upload course material (PDF / DOCX / TXT)</h2>
+        <input id="docFile" type="file" />
+        <button onclick="uploadDoc()">Upload &amp; ingest</button>
+        <div id="doc-list"></div>
+      </div>
+      <div class="card">
+        <h2>Generate teaching material</h2>
+        <div class="row">
+          <select id="materialType">
+            <option value="lesson_plan">Lesson plan</option>
+            <option value="summary">Summary</option>
+            <option value="revision_notes">Revision notes</option>
+            <option value="practice_questions">Practice questions</option>
+          </select>
+          <input id="materialTopic" placeholder="Topic (optional)" />
+        </div>
+        <button onclick="generateMaterial()">Generate</button>
+        <div id="material-output"></div>
+      </div>
+      <div class="card">
+        <h2>Create an assessment</h2>
+        <div class="row">
+          <input id="assessTitle" placeholder="Title" />
+          <input id="assessTopic" placeholder="Topic (optional)" />
+        </div>
+        <div class="row">
+          <div><label>MCQs</label><input id="assessMcq" type="number" value="3" /></div>
+          <div><label>SAQs</label><input id="assessSaq" type="number" value="1" /></div>
+        </div>
+        <button onclick="createAssessment()">Generate</button>
+        <div id="assessment-list"></div>
+      </div>
+    </div>
+
+    <div id="student-course-tools" class="hidden">
+      <div class="card">
+        <h2>Ask the tutor</h2>
+        <div id="chat-log"></div>
+        <textarea id="chatInput" placeholder="Ask a question about this course..."></textarea>
+        <button onclick="sendChat()">Ask</button>
+      </div>
+      <div class="card">
+        <h2>Assessments</h2>
+        <div id="student-assessment-list"></div>
+        <div id="take-assessment-area"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let apiBase = document.getElementById('apiBaseInput').value;
+document.getElementById('apiBaseInput').addEventListener('change', e => apiBase = e.target.value);
+document.getElementById('api-base').textContent = apiBase;
+
+let token = localStorage.getItem('atdt_token') || '';
+let me = null;
+let currentCourse = null;
+let conversationId = null;
+let isRegisterMode = false;
+
+async function api(path, opts = {}) {
+  const headers = opts.headers || {};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  if (opts.json) { headers['Content-Type'] = 'application/json'; opts.body = JSON.stringify(opts.json); }
+  const res = await fetch(apiBase + path, { ...opts, headers });
+  if (!res.ok) {
+    let detail = res.statusText;
+    try { detail = (await res.json()).detail || detail; } catch (e) {}
+    throw new Error(detail);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+function toggleRegister() {
+  isRegisterMode = !isRegisterMode;
+  document.getElementById('register-extra').classList.toggle('hidden', !isRegisterMode);
+}
+
+async function login() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  try {
+    let data;
+    if (isRegisterMode) {
+      data = await api('/auth/register', { method: 'POST', json: {
+        email, password,
+        full_name: document.getElementById('fullName').value,
+        role: document.getElementById('role').value,
+      }});
+    } else {
+      data = await api('/auth/login', { method: 'POST', json: { email, password } });
+    }
+    token = data.access_token;
+    localStorage.setItem('atdt_token', token);
+    await afterLogin();
+  } catch (e) {
+    errEl.textContent = e.message;
+  }
+}
+
+function logout() {
+  token = '';
+  localStorage.removeItem('atdt_token');
+  document.getElementById('auth-section').classList.remove('hidden');
+  document.getElementById('app-section').classList.add('hidden');
+}
+
+async function afterLogin() {
+  me = await api('/auth/me');
+  document.getElementById('auth-section').classList.add('hidden');
+  document.getElementById('app-section').classList.remove('hidden');
+  document.getElementById('whoami').textContent = `${me.full_name} (${me.role})`;
+  document.getElementById('lecturer-view').classList.toggle('hidden', me.role !== 'lecturer');
+  document.getElementById('student-view').classList.toggle('hidden', me.role !== 'student');
+  if (me.role === 'lecturer') loadLecturerCourses(); else loadStudentCourses();
+}
+
+async function loadLecturerCourses() {
+  const courses = await api('/courses');
+  const el = document.getElementById('course-list');
+  el.innerHTML = courses.map(c =>
+    `<div class="card"><b>${c.title}</b> <span class="tag">${c.enrolment_code}</span>
+     <p class="muted">${c.description || ''}</p>
+     <button onclick="openCourse(${c.id})">Open</button></div>`
+  ).join('') || '<p class="muted">No courses yet.</p>';
+}
+
+async function createCourse() {
+  await api('/courses', { method: 'POST', json: {
+    title: document.getElementById('newCourseTitle').value,
+    subject_area: document.getElementById('newCourseSubject').value,
+    description: document.getElementById('newCourseDesc').value,
+  }});
+  loadLecturerCourses();
+}
+
+async function loadStudentCourses() {
+  const courses = await api('/courses');
+  const el = document.getElementById('student-course-list');
+  el.innerHTML = courses.map(c =>
+    `<div class="card"><b>${c.title}</b><p class="muted">${c.description || ''}</p>
+     <button onclick="openCourse(${c.id})">Open</button></div>`
+  ).join('') || '<p class="muted">Not enrolled in any course yet.</p>';
+}
+
+async function enrol() {
+  await api('/courses/enrol', { method: 'POST', json: { enrolment_code: document.getElementById('enrolCode').value } });
+  loadStudentCourses();
+}
+
+async function openCourse(id) {
+  currentCourse = await api(`/courses/${id}`);
+  conversationId = null;
+  document.getElementById('course-detail').classList.remove('hidden');
+  document.getElementById('course-title').textContent = currentCourse.title;
+  document.getElementById('course-code').textContent = currentCourse.enrolment_code;
+  document.getElementById('lecturer-course-tools').classList.toggle('hidden', me.role !== 'lecturer');
+  document.getElementById('student-course-tools').classList.toggle('hidden', me.role !== 'student');
+  if (me.role === 'lecturer') { loadDocs(); loadAssessments(); }
+  else { document.getElementById('chat-log').innerHTML = ''; loadStudentAssessments(); }
+}
+
+function closeCourse() {
+  currentCourse = null;
+  document.getElementById('course-detail').classList.add('hidden');
+}
+
+async function loadDocs() {
+  const docs = await api(`/courses/${currentCourse.id}/documents`);
+  document.getElementById('doc-list').innerHTML = docs.map(d =>
+    `<div class="muted">${d.filename} — ${d.status}${d.status === 'ready' ? ` (${d.chunk_count} chunks)` : ''}</div>`
+  ).join('');
+}
+
+async function uploadDoc() {
+  const file = document.getElementById('docFile').files[0];
+  if (!file) return;
+  const form = new FormData();
+  form.append('file', file);
+  const headers = { Authorization: 'Bearer ' + token };
+  const res = await fetch(`${apiBase}/courses/${currentCourse.id}/documents`, { method: 'POST', headers, body: form });
+  if (!res.ok) { alert('Upload failed'); return; }
+  setTimeout(loadDocs, 1000);
+  loadDocs();
+}
+
+async function generateMaterial() {
+  const out = document.getElementById('material-output');
+  out.innerHTML = '<p class="muted">Generating...</p>';
+  const material = await api(`/courses/${currentCourse.id}/teaching/materials`, { method: 'POST', json: {
+    type: document.getElementById('materialType').value,
+    topic: document.getElementById('materialTopic').value,
+  }});
+  out.innerHTML = `<div class="bubble">${escapeHtml(material.content)}</div>`;
+}
+
+async function createAssessment() {
+  const a = await api(`/courses/${currentCourse.id}/examination/assessments`, { method: 'POST', json: {
+    title: document.getElementById('assessTitle').value,
+    topic: document.getElementById('assessTopic').value,
+    mcq_count: parseInt(document.getElementById('assessMcq').value || '0'),
+    saq_count: parseInt(document.getElementById('assessSaq').value || '0'),
+  }});
+  loadAssessments();
+}
+
+async function loadAssessments() {
+  const list = await api(`/courses/${currentCourse.id}/examination/assessments`);
+  const el = document.getElementById('assessment-list');
+  el.innerHTML = await Promise.all(list.map(async a => {
+    const questions = await api(`/courses/${currentCourse.id}/examination/assessments/${a.id}/review`);
+    const qhtml = questions.map(q => `<li>[${q.type}] ${escapeHtml(q.text)}</li>`).join('');
+    return `<div class="card"><b>${a.title}</b> <span class="tag">${a.status}</span>
+      <ul>${qhtml}</ul>
+      ${a.status === 'draft' ? `<button onclick="publishAssessment(${a.id})">Publish</button>` : ''}</div>`;
+  })).then(rows => rows.join(''));
+}
+
+async function publishAssessment(id) {
+  await api(`/courses/${currentCourse.id}/examination/assessments/${id}/publish`, { method: 'POST' });
+  loadAssessments();
+}
+
+async function loadStudentAssessments() {
+  const list = await api(`/courses/${currentCourse.id}/examination/assessments/published`);
+  const el = document.getElementById('student-assessment-list');
+  el.innerHTML = list.map(a =>
+    `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="muted">(${a.mcq_count} MCQ, ${a.saq_count} SAQ, ${a.time_limit_minutes} min)</span>
+     <button onclick="loadTakeAssessment(${a.id})">Take</button></div>`
+  ).join('') || '<p class="muted">No published assessments yet.</p>';
+}
+
+async function loadTakeAssessment(id) {
+  const questions = await api(`/courses/${currentCourse.id}/examination/assessments/${id}/take`);
+  const area = document.getElementById('take-assessment-area');
+  area.innerHTML = questions.map(q => {
+    if (q.type === 'mcq') {
+      const opts = q.options.map(o => `<label><input type="radio" name="q${q.id}" value="${escapeAttr(o)}"> ${escapeHtml(o)}</label>`).join('');
+      return `<div class="card"><b>${escapeHtml(q.text)}</b>${opts}</div>`;
+    }
+    return `<div class="card"><b>${escapeHtml(q.text)}</b><textarea id="ans${q.id}"></textarea></div>`;
+  }).join('') + `<button onclick="submitAssessment(${id}, ${JSON.stringify(questions.map(q => q.id))})">Submit</button><div id="result"></div>`;
+}
+
+async function submitAssessment(assessmentId, questionIds) {
+  const answers = questionIds.map(qid => {
+    const radio = document.querySelector(`input[name="q${qid}"]:checked`);
+    if (radio) return { question_id: qid, answer: radio.value };
+    const ta = document.getElementById(`ans${qid}`);
+    return { question_id: qid, answer: ta ? ta.value : '' };
+  });
+  const result = await api(`/courses/${currentCourse.id}/examination/assessments/${assessmentId}/submit`, {
+    method: 'POST', json: { answers },
+  });
+  document.getElementById('result').innerHTML =
+    `<div class="card"><b>Score: ${result.total_score}%</b><ul>` +
+    result.responses.map(r => `<li>Q${r.question_id}: ${r.score} — ${escapeHtml(r.feedback)}</li>`).join('') +
+    `</ul></div>`;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const question = input.value.trim();
+  if (!question) return;
+  const log = document.getElementById('chat-log');
+  log.innerHTML += `<div class="msg-user"><div class="bubble">${escapeHtml(question)}</div></div>`;
+  input.value = '';
+  const res = await api(`/courses/${currentCourse.id}/tutoring/query`, { method: 'POST', json: {
+    question, conversation_id: conversationId,
+  }});
+  conversationId = res.conversation_id;
+  const citations = res.citations.map(c =>
+    `<div class="citation">${escapeHtml(c.source_document)} (p.${c.page_number ?? '-'}): ${escapeHtml(c.excerpt)}</div>`
+  ).join('');
+  log.innerHTML += `<div><div class="bubble">${escapeHtml(res.answer)}</div>${citations}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function escapeHtml(s) { return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g, '&quot;'); }
+
+if (token) afterLogin().catch(() => logout());
+</script>
+</body>
+</html>
