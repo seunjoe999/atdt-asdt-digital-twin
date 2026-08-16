@@ -1,5 +1,13 @@
 # ATDT + ASDT — Digital Twin Classroom (MVP)
 
+**Live demo:** https://frontend-bice-five-4nxmifmhej.vercel.app
+(backends: [ATDT](https://atdt-backend.onrender.com/docs) /
+[ASDT](https://asdt-backend.onrender.com/docs) — both on Render's free tier,
+so the first request after ~15 min idle takes 30–60s to wake up; that's
+normal, not a bug)
+
+Repo: https://github.com/seunjoe999/atdt-asdt-digital-twin
+
 A single webapp that demos both halves of the final year project together:
 a **teacher** uploads course material, which the **ATDT** (Agentic Teacher
 Digital Twin) ingests and teaches from; a **student** then learns through
