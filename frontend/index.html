@@ -2,178 +2,579 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>ATDT + ASDT — Digital Twin Classroom</title>
+<title>Twinclass — ATDT + ASDT Digital Twin Classroom</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a78d6'/%3E%3Cpath d='M9 20V12l7-4 7 4v8l-7 4-7-4Z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M9 12l7 4 7-4' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <style>
-  :root { color-scheme: light dark; }
-  body { font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
-  h1 { font-size: 1.4rem; margin-bottom: .25rem; }
-  h2 { font-size: 1.1rem; margin-top: 1.5rem; border-bottom: 1px solid #8884; padding-bottom: .25rem; }
-  h3 { font-size: .95rem; margin: 1rem 0 .25rem; }
-  label { display: block; margin: .5rem 0 .2rem; font-size: .85rem; opacity: .8; }
-  input, select, textarea, button { font: inherit; padding: .5rem; border-radius: 6px; border: 1px solid #8886; width: 100%; box-sizing: border-box; }
-  textarea { min-height: 4rem; }
-  button { cursor: pointer; width: auto; padding: .5rem 1rem; margin-top: .5rem; }
-  button.secondary { background: none; }
-  button.small { padding: .25rem .6rem; margin: 0 0 0 .5rem; font-size: .8rem; }
-  .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: flex-end; }
+  :root {
+    color-scheme: light;
+    --bg: #f9f9f7;
+    --surface: #fcfcfb;
+    --surface-2: #f1f1ee;
+    --border: rgba(11,11,11,0.10);
+    --border-strong: rgba(11,11,11,0.16);
+    --text: #0b0b0b;
+    --text-muted: #52514e;
+    --text-faint: #898781;
+    --primary: #2a78d6;
+    --primary-ink: #ffffff;
+    --primary-soft: rgba(42,120,214,0.10);
+    --primary-soft-strong: rgba(42,120,214,0.18);
+    --accent: #1baf7a;
+    --good: #0ca30c;
+    --good-soft: rgba(12,163,12,0.12);
+    --warning: #c98500;
+    --warning-soft: rgba(250,178,25,0.18);
+    --critical: #d03b3b;
+    --critical-soft: rgba(208,59,59,0.10);
+    --track: #e1e0d9;
+    --radius: 12px;
+    --radius-lg: 16px;
+    --shadow: 0 1px 2px rgba(11,11,11,.04), 0 6px 20px -8px rgba(11,11,11,.10);
+    --shadow-lg: 0 4px 8px rgba(11,11,11,.04), 0 16px 40px -12px rgba(11,11,11,.16);
+    --sidebar-w: 248px;
+    --topbar-h: 64px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0d0d0d;
+      --surface: #1a1a19;
+      --surface-2: #232322;
+      --border: rgba(255,255,255,0.10);
+      --border-strong: rgba(255,255,255,0.18);
+      --text: #ffffff;
+      --text-muted: #c3c2b7;
+      --text-faint: #898781;
+      --primary: #3987e5;
+      --primary-ink: #ffffff;
+      --primary-soft: rgba(57,135,229,0.16);
+      --primary-soft-strong: rgba(57,135,229,0.26);
+      --accent: #199e70;
+      --good: #0ca30c;
+      --good-soft: rgba(12,163,12,0.18);
+      --warning: #fab219;
+      --warning-soft: rgba(250,178,25,0.16);
+      --critical: #e66767;
+      --critical-soft: rgba(230,103,103,0.16);
+      --track: #2c2c2a;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
+      --shadow-lg: 0 4px 8px rgba(0,0,0,.3), 0 16px 40px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #232322;
+    --border: rgba(255,255,255,0.10);
+    --border-strong: rgba(255,255,255,0.18);
+    --text: #ffffff;
+    --text-muted: #c3c2b7;
+    --text-faint: #898781;
+    --primary: #3987e5;
+    --primary-ink: #ffffff;
+    --primary-soft: rgba(57,135,229,0.16);
+    --primary-soft-strong: rgba(57,135,229,0.26);
+    --accent: #199e70;
+    --good: #0ca30c;
+    --good-soft: rgba(12,163,12,0.18);
+    --warning: #fab219;
+    --warning-soft: rgba(250,178,25,0.16);
+    --critical: #e66767;
+    --critical-soft: rgba(230,103,103,0.16);
+    --track: #2c2c2a;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
+    --shadow-lg: 0 4px 8px rgba(0,0,0,.3), 0 16px 40px -12px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    margin: 0; background: var(--bg); color: var(--text); line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--primary); }
+  h1, h2, h3 { margin: 0 0 .35rem; font-weight: 700; letter-spacing: -.01em; }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.05rem; }
+  h3.eyebrow { font-size: .72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; margin: 1.5rem 0 .6rem; }
+  p { margin: .25rem 0; }
+  label { display: block; margin: .6rem 0 .3rem; font-size: .78rem; color: var(--text-muted); font-weight: 600; }
+  input, select, textarea, button {
+    font: inherit; padding: .62rem .8rem; border-radius: 10px; border: 1px solid var(--border-strong);
+    width: 100%; box-sizing: border-box; background: var(--surface); color: var(--text);
+  }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
+  textarea { min-height: 4.5rem; resize: vertical; font-family: inherit; }
+  button {
+    cursor: pointer; width: auto; padding: .62rem 1.1rem; margin-top: .5rem;
+    background: var(--primary); color: var(--primary-ink); border: 1px solid transparent; font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+    transition: filter .15s ease, transform .05s ease, background .15s ease;
+  }
+  button:hover { filter: brightness(1.08); }
+  button:active { transform: scale(.98); }
+  button.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+  button.secondary:hover { background: var(--surface-2); filter: none; }
+  button.small { padding: .4rem .75rem; margin: 0 0 0 .5rem; font-size: .8rem; width: auto; }
+  button.ghost { background: none; color: var(--primary); padding: .4rem .5rem; border: none; }
+  button.ghost:hover { background: var(--primary-soft); filter: none; }
+  button.block { width: 100%; }
+  button.danger { background: var(--critical); }
+  button svg { flex: none; }
+
+  .row { display: flex; gap: .65rem; flex-wrap: wrap; align-items: flex-end; }
   .row > * { flex: 1; min-width: 160px; }
-  .card { border: 1px solid #8884; border-radius: 8px; padding: 1rem; margin: .75rem 0; }
-  .muted { opacity: .65; font-size: .85rem; }
+  .card {
+    border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.2rem 1.3rem;
+    margin: .9rem 0; background: var(--surface); box-shadow: var(--shadow);
+  }
+  .muted { color: var(--text-muted); font-size: .85rem; }
+  .faint { color: var(--text-faint); font-size: .78rem; }
   .msg-user { text-align: right; }
-  .bubble { display: inline-block; padding: .5rem .75rem; border-radius: 10px; background: #8884; max-width: 85%; margin: .25rem 0; text-align: left; white-space: pre-wrap; }
-  .msg-user .bubble { background: #2563eb22; }
-  .citation { font-size: .75rem; opacity: .7; border-left: 2px solid #8886; padding-left: .5rem; margin-top: .25rem; }
+  .bubble {
+    display: inline-block; padding: .65rem .9rem; border-radius: 14px; background: var(--surface-2);
+    max-width: 85%; margin: .3rem 0; text-align: left; white-space: pre-wrap; border: 1px solid var(--border);
+  }
+  .msg-user .bubble { background: var(--primary-soft); border-color: var(--primary-soft-strong); }
+  .citation { font-size: .76rem; border-left: 2px solid var(--primary); padding-left: .6rem; margin: .35rem 0; color: var(--text-muted); }
   .hidden { display: none !important; }
-  .error { color: #dc2626; }
-  .tag { display: inline-block; font-size: .7rem; padding: .1rem .5rem; border-radius: 999px; background: #8884; margin-left: .4rem; }
-  .tag.gap-open { background: #dc262633; }
-  .tag.gap-negotiating { background: #d9770633; }
-  .tag.gap-resolved { background: #16a34a33; }
-  .tabs { display: flex; gap: .25rem; border-bottom: 1px solid #8884; margin: 1rem 0 0; }
-  .tabs button { border-radius: 6px 6px 0 0; border-bottom: none; opacity: .6; margin: 0; }
-  .tabs button.active { opacity: 1; font-weight: 600; border-bottom: 2px solid #2563eb; }
-  .meter { height: 10px; border-radius: 999px; background: #8883; overflow: hidden; margin: .25rem 0; }
-  .meter > div { height: 100%; background: #2563eb; }
-  .badge-role { font-size: .75rem; padding: .1rem .5rem; border-radius: 999px; background: #2563eb33; }
-  nav.crumb button { background: none; border: none; text-decoration: underline; padding: 0; margin: 0 1rem 0 0; width: auto; }
-  details.config summary { cursor: pointer; font-size: .85rem; opacity: .7; margin: .5rem 0; }
+  .error { color: var(--critical); font-size: .85rem; }
+
+  .tag {
+    display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; padding: .2rem .6rem .2rem .5rem;
+    border-radius: 999px; background: var(--surface-2); margin-left: .4rem; color: var(--text-muted);
+    font-weight: 600; border: 1px solid var(--border);
+  }
+  .tag .dot { width: 6px; height: 6px; border-radius: 999px; flex: none; background: var(--text-faint); }
+  .tag.st-good { background: var(--good-soft); } .tag.st-good .dot { background: var(--good); }
+  .tag.st-warning { background: var(--warning-soft); } .tag.st-warning .dot { background: var(--warning); }
+  .tag.st-critical { background: var(--critical-soft); } .tag.st-critical .dot { background: var(--critical); }
+
+  .tabs { display: flex; gap: .2rem; border-bottom: 1px solid var(--border); margin: 0 0 1.1rem; overflow-x: auto; }
+  .tabs button {
+    border-radius: 10px 10px 0 0; border: none; background: none; opacity: .6; margin: 0;
+    color: var(--text); padding: .7rem 1.1rem; font-weight: 600; white-space: nowrap;
+  }
+  .tabs button:hover { background: var(--surface-2); opacity: .85; }
+  .tabs button.active { opacity: 1; color: var(--primary); box-shadow: inset 0 -2px 0 var(--primary); }
+
+  .meter { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; margin: .35rem 0; }
+  .meter > div { height: 100%; border-radius: 999px; background: var(--primary); }
+
+  .badge-role {
+    font-size: .7rem; padding: .2rem .6rem; border-radius: 999px; background: var(--primary-soft);
+    color: var(--primary); font-weight: 700; letter-spacing: .01em;
+  }
+  details.config summary { cursor: pointer; font-size: .8rem; color: var(--text-muted); margin: .5rem 0; }
+  details.config summary:hover { color: var(--text); }
+
+  .icon { width: 18px; height: 18px; display: block; }
+  .icon-sm { width: 15px; height: 15px; }
+  .icon-lg { width: 22px; height: 22px; }
+
+  /* ---------- Landing / Home (logged out) ---------- */
+  .landing-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.1rem 5%; border-bottom: 1px solid var(--border); position: sticky; top: 0;
+    background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); z-index: 20;
+  }
+  .brand { display: flex; align-items: center; gap: .55rem; font-weight: 800; font-size: 1.1rem; letter-spacing: -.01em; }
+  .brand .logo {
+    width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
+    background: var(--primary); color: #fff; flex: none;
+  }
+  .landing-nav .muted { display: none; }
+  @media (min-width: 700px) { .landing-nav .muted { display: block; } }
+
+  .hero {
+    max-width: 1120px; margin: 0 auto; padding: 4rem 5% 2.5rem; display: grid;
+    grid-template-columns: 1.05fr .95fr; gap: 3rem; align-items: start;
+  }
+  .hero h1 { font-size: 2.5rem; line-height: 1.14; margin-bottom: 1rem; letter-spacing: -.02em; }
+  .hero .accent { color: var(--primary); }
+  .hero p.lead { font-size: 1.06rem; color: var(--text-muted); max-width: 46ch; }
+  .pill-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.4rem; }
+  .pill {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: .4rem .85rem .4rem .6rem; font-size: .78rem; color: var(--text-muted); font-weight: 600;
+  }
+  .pill .icon { color: var(--primary); }
+  .feature-grid {
+    max-width: 1120px; margin: .5rem auto 3.5rem; padding: 0 5%; display: grid;
+    grid-template-columns: repeat(3, 1fr); gap: 1rem;
+  }
+  .feature-grid .card { display: flex; flex-direction: column; gap: .35rem; }
+  .feature-grid .fic {
+    width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: var(--primary-soft); color: var(--primary); margin-bottom: .3rem;
+  }
+  .feature-grid .card h2 { font-size: 1rem; }
+  .landing-footer { text-align: center; padding: 2.5rem 5% 3rem; color: var(--text-faint); font-size: .8rem; }
+  @media (max-width: 820px) {
+    .hero { grid-template-columns: 1fr; padding-top: 2.5rem; }
+    .feature-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- App shell (logged in) ---------- */
+  #app-shell { display: none; min-height: 100vh; }
+  #app-shell.active { display: grid; grid-template-columns: var(--sidebar-w) 1fr; }
+  #sidebar {
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 1.1rem .9rem; position: sticky; top: 0; height: 100vh;
+  }
+  #sidebar .brand { padding: .3rem .5rem 1.6rem; }
+  .nav-link {
+    display: flex; align-items: center; gap: .7rem; padding: .62rem .75rem; border-radius: 10px;
+    color: var(--text-muted); font-weight: 600; font-size: .88rem; cursor: pointer; margin-bottom: .15rem;
+    background: none; border: none; width: 100%; text-align: left;
+  }
+  .nav-link:hover { background: var(--surface-2); color: var(--text); }
+  .nav-link.active { background: var(--primary-soft); color: var(--primary); }
+  .nav-link .icon { flex: none; color: inherit; }
+  #sidebar .spacer { flex: 1; }
+  #sidebar-user { border-top: 1px solid var(--border); padding-top: .9rem; margin-top: .5rem; display: flex; align-items: center; gap: .6rem; }
+  #sidebar-user .avatar {
+    width: 34px; height: 34px; border-radius: 999px; background: var(--primary-soft); color: var(--primary);
+    display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; flex: none;
+  }
+  #sidebar-user .meta { min-width: 0; flex: 1; }
+  #sidebar-user .who { font-size: .83rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #sidebar-user .role { font-size: .72rem; color: var(--text-muted); }
+  #sidebar-user button.ghost { padding: .4rem; flex: none; }
+
+  #main-col { display: flex; flex-direction: column; min-height: 100vh; }
+  #topbar {
+    height: var(--topbar-h); flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 1.75rem; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 10;
+  }
+  #topbar-title { font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: .5rem; }
+  #topbar-actions { display: flex; align-items: center; gap: .5rem; }
+  .icon-btn {
+    width: 36px; height: 36px; padding: 0; border-radius: 10px; background: none; border: 1px solid var(--border);
+    color: var(--text-muted); display: flex; align-items: center; justify-content: center; margin: 0;
+  }
+  .icon-btn:hover { background: var(--surface-2); color: var(--text); filter: none; }
+
+  #main { padding: 1.75rem 1.75rem 4rem; max-width: 1120px; width: 100%; margin: 0 auto; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1.3rem; flex-wrap: wrap; gap: .5rem; }
+  .page-header h1 { font-size: 1.55rem; }
+  .page-header .sub { color: var(--text-muted); font-size: .9rem; margin-top: .1rem; }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1rem; margin-bottom: .3rem; }
+  .stat-card { display: flex; align-items: center; gap: .9rem; }
+  .stat-card .stat-ic {
+    width: 42px; height: 42px; border-radius: 11px; display: flex; align-items: center; justify-content: center;
+    background: var(--primary-soft); color: var(--primary); flex: none;
+  }
+  .stat-card .num { font-size: 1.55rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .stat-card .label { font-size: .78rem; color: var(--text-muted); font-weight: 600; }
+  .course-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; }
+  .course-card { display: flex; flex-direction: column; gap: .4rem; }
+  .course-card .top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+  .course-card .title { font-weight: 700; font-size: 1rem; }
+  .course-card .subject { color: var(--text-faint); font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+  .course-card button { align-self: flex-start; }
+  .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); border: 1px dashed var(--border-strong); border-radius: var(--radius-lg); }
+  .empty-state .icon-lg { margin: 0 auto .6rem; color: var(--text-faint); width: 32px; height: 32px; }
+
+  nav.crumb { margin-bottom: .5rem; }
+  nav.crumb button.ghost { padding: .35rem .6rem .35rem .4rem; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+
+  @media (max-width: 820px) {
+    #app-shell.active { grid-template-columns: 1fr; }
+    #sidebar { position: static; height: auto; flex-direction: row; overflow-x: auto; padding: .7rem; }
+    #sidebar .brand, #sidebar-user, #sidebar .spacer { display: none; }
+    .nav-link { white-space: nowrap; }
+    #main { padding: 1.25rem 1rem 3rem; }
+    #topbar { padding: 0 1rem; }
+  }
 </style>
 </head>
 <body>
-<h1>ATDT + ASDT — Digital Twin Classroom</h1>
-<p class="muted">Teacher uploads a course &rarr; ATDT learns and teaches it &rarr; student learns through their own ASDT.</p>
-<p class="muted">Backends run on Render's free tier and sleep after ~15 min idle &mdash; the first request after a while can take 30&ndash;60s to wake up. That's normal, not a bug.</p>
 
-<details class="config">
-  <summary>API configuration</summary>
-  <div class="row">
-    <div><label>ATDT base URL</label><input id="atdtBaseInput" value="https://atdt-backend.onrender.com" /></div>
-    <div><label>ASDT base URL</label><input id="asdtBaseInput" value="https://asdt-backend.onrender.com" /></div>
-  </div>
-</details>
+<!-- Reusable icon defs (referenced via <use href="#ic-name">) -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <g id="ic-home"><path d="M4 11.5 12 4l8 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9a1 1 0 0 0 1 1h3v-6h4v6h3a1 1 0 0 0 1-1v-9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="ic-book"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H12v16H5.5A1.5 1.5 0 0 1 4 18.5v-13Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H12v16h6.5a1.5 1.5 0 0 0 1.5-1.5v-13Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></g>
+    <g id="ic-user"><circle cx="12" cy="8" r="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4.5 20c1.2-3.8 4.3-6 7.5-6s6.3 2.2 7.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g id="ic-logout"><path d="M9 20H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 16l4-4-4-4M20 12H9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="ic-chevron-left"><path d="M14.5 5 8 12l6.5 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="ic-upload"><path d="M12 15V4M7 9l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="ic-chat"><path d="M4 5h16v10H8l-4 4V5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></g>
+    <g id="ic-bars"><rect x="4" y="12" width="4" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="10" y="8" width="4" height="12" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="16" y="4" width="4" height="16" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/></g>
+    <g id="ic-clipboard"><rect x="5" y="5" width="14" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="9" y="3" width="6" height="4" rx="1" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 12h7M8.5 16h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g id="ic-plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+    <g id="ic-check"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 12.5l2.7 2.7L16 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+    <g id="ic-warn"><path d="M12 4 2.5 20h19L12 4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/></g>
+    <g id="ic-x"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g id="ic-sun"><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 2.5v2.5M12 19v2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12H5M19 12h2.5M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></g>
+    <g id="ic-moon"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></g>
+    <g id="ic-empty"><path d="M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M2.5 8 5 3h14l2.5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9.5 12.5a2.5 2.5 0 0 0 5 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+    <g id="ic-graduation"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M6 11.5V16c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 10v5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+  </defs>
+</svg>
 
-<div id="auth-section" class="card">
-  <h2>Sign in / register</h2>
-  <div class="row">
-    <div><label>Email</label><input id="email" type="email" /></div>
-    <div><label>Password</label><input id="password" type="password" /></div>
+<!-- ============================================================ -->
+<!-- LANDING / HOME (shown when logged out)                        -->
+<!-- ============================================================ -->
+<div id="landing">
+  <div class="landing-nav">
+    <div class="brand"><span class="logo"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-graduation"/></svg></span> Twinclass</div>
+    <div class="muted">ATDT + ASDT Digital Twin Classroom</div>
+    <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme" style="margin-left:1rem">
+      <svg class="icon-sm" id="theme-icon" viewBox="0 0 24 24"><use href="#ic-moon"/></svg>
+    </button>
   </div>
-  <div class="row hidden" id="register-extra">
-    <div><label>Full name</label><input id="fullName" /></div>
-    <div><label>Role</label>
-      <select id="role"><option value="lecturer">Teacher</option><option value="student">Student</option></select>
+
+  <div class="hero">
+    <div>
+      <h1>Teach once. <span class="accent">Every</span> student gets a twin that tutors them.</h1>
+      <p class="lead">Upload a course and your <b>Agentic Teacher Digital Twin</b> learns and teaches it. Each student's own <b>Agentic Student Digital Twin</b> tracks mastery, finds gaps, and negotiates remediation with the teacher's twin — automatically.</p>
+      <div class="pill-row">
+        <span class="pill"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-upload"/></svg> Upload &amp; ingest course material</span>
+        <span class="pill"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-chat"/></svg> RAG-grounded tutoring</span>
+        <span class="pill"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-bars"/></svg> Per-topic mastery tracking</span>
+        <span class="pill"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-graduation"/></svg> Twin-to-twin negotiation</span>
+      </div>
+    </div>
+
+    <div id="auth-section" class="card">
+      <h2 id="auth-heading">Sign in</h2>
+      <div class="row">
+        <div><label>Email</label><input id="email" type="email" /></div>
+      </div>
+      <div class="row">
+        <div><label>Password</label><input id="password" type="password" /></div>
+      </div>
+      <div class="row hidden" id="register-extra">
+        <div><label>Full name</label><input id="fullName" /></div>
+        <div><label>I am a...</label>
+          <select id="role"><option value="lecturer">Teacher</option><option value="student">Student</option></select>
+        </div>
+      </div>
+      <div class="row">
+        <button class="block" onclick="login()" style="flex:2">Continue</button>
+        <button class="secondary block" onclick="toggleRegister()" style="flex:1">Register instead</button>
+      </div>
+      <p id="auth-error" class="error"></p>
+      <details class="config">
+        <summary>API configuration</summary>
+        <div class="row">
+          <div><label>ATDT base URL</label><input id="atdtBaseInput" value="https://atdt-backend.onrender.com" /></div>
+          <div><label>ASDT base URL</label><input id="asdtBaseInput" value="https://asdt-backend.onrender.com" /></div>
+        </div>
+        <p class="faint">Backends run on Render's free tier and sleep after ~15 min idle — the first request after a while can take 30–60s to wake up. That's normal, not a bug.</p>
+      </details>
     </div>
   </div>
-  <div class="row">
-    <button onclick="login()">Log in</button>
-    <button class="secondary" onclick="toggleRegister()">Register instead</button>
+
+  <h3 class="eyebrow" style="max-width:1120px;margin-left:auto;margin-right:auto;padding:0 5%">What each role sees</h3>
+  <div class="feature-grid">
+    <div class="card">
+      <span class="fic"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-upload"/></svg></span>
+      <h2>For teachers</h2>
+      <p class="muted">Create a course, upload PDFs/DOCX/TXT, and let ATDT generate lesson plans, revision notes, and auto-graded assessments.</p>
+    </div>
+    <div class="card">
+      <span class="fic"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-chat"/></svg></span>
+      <h2>For students</h2>
+      <p class="muted">Ask questions with real citations, take assessments, and see your mastery grow topic by topic.</p>
+    </div>
+    <div class="card">
+      <span class="fic"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-graduation"/></svg></span>
+      <h2>Closing the loop</h2>
+      <p class="muted">When a student struggles, their ASDT detects the gap and negotiates targeted remediation directly with ATDT.</p>
+    </div>
   </div>
-  <p id="auth-error" class="error"></p>
+
+  <div class="landing-footer">Final year project — Agentic Teacher &amp; Student Digital Twins, built on FastAPI + ChromaDB + dyon.</div>
 </div>
 
-<div id="app-section" class="hidden">
-  <p><span id="whoami"></span> <button class="small secondary" onclick="logout()">Log out</button></p>
-
-  <!-- ============ TEACHER ============ -->
-  <div id="lecturer-view" class="hidden">
-    <h2>Your courses</h2>
-    <div id="course-list"></div>
-    <div class="card">
-      <h2>Create a course</h2>
-      <input id="newCourseTitle" placeholder="Course title" />
-      <input id="newCourseSubject" placeholder="Subject area" />
-      <textarea id="newCourseDesc" placeholder="Description"></textarea>
-      <button onclick="createCourse()">Create</button>
+<!-- ============================================================ -->
+<!-- APP SHELL (shown when logged in)                              -->
+<!-- ============================================================ -->
+<div id="app-shell">
+  <div id="sidebar">
+    <div class="brand"><span class="logo"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-graduation"/></svg></span> Twinclass</div>
+    <button class="nav-link active" id="nav-dashboard" onclick="showView('dashboard')"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-home"/></svg> Dashboard</button>
+    <button class="nav-link" id="nav-courses" onclick="showView('courses')"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-book"/></svg> Courses</button>
+    <button class="nav-link" id="nav-profile" onclick="showView('profile')"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-user"/></svg> Profile</button>
+    <div class="spacer"></div>
+    <div id="sidebar-user">
+      <div class="avatar" id="whoami-initial"></div>
+      <div class="meta">
+        <div class="who" id="whoami-name"></div>
+        <div class="role" id="whoami-role"></div>
+      </div>
+      <button class="ghost" onclick="logout()" title="Log out"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-logout"/></svg></button>
     </div>
   </div>
 
-  <!-- ============ STUDENT ============ -->
-  <div id="student-view" class="hidden">
-    <h2>Your courses</h2>
-    <div id="student-course-list"></div>
-    <div class="card">
-      <h2>Enrol in a course</h2>
-      <input id="enrolCode" placeholder="Enrolment code from your teacher" />
-      <button onclick="enrol()">Enrol</button>
-    </div>
-  </div>
-
-  <!-- ============ COURSE DETAIL ============ -->
-  <div id="course-detail" class="hidden">
-    <nav class="crumb"><button onclick="closeCourse()">&larr; back to courses</button></nav>
-    <h2>Course: <span id="course-title"></span> <span class="tag" id="course-code"></span></h2>
-
-    <div id="lecturer-course-tools" class="hidden">
-      <div class="card">
-        <h2>Upload course material — ATDT learns from this</h2>
-        <p class="muted">PDF, DOCX, or TXT. Once ingested, ATDT can teach, tutor, and examine on it.</p>
-        <input id="docFile" type="file" />
-        <button onclick="uploadDoc()">Upload &amp; ingest</button>
-        <div id="doc-list"></div>
-      </div>
-      <div class="card">
-        <h2>Generate teaching material</h2>
-        <div class="row">
-          <select id="materialType">
-            <option value="lesson_plan">Lesson plan</option>
-            <option value="summary">Summary</option>
-            <option value="revision_notes">Revision notes</option>
-            <option value="practice_questions">Practice questions</option>
-          </select>
-          <input id="materialTopic" placeholder="Topic (optional)" />
-        </div>
-        <button onclick="generateMaterial()">Generate</button>
-        <div id="material-output"></div>
-      </div>
-      <div class="card">
-        <h2>Create an assessment</h2>
-        <div class="row">
-          <input id="assessTitle" placeholder="Title" />
-          <input id="assessTopic" placeholder="Topic (used by ASDT for gap tracking)" />
-        </div>
-        <div class="row">
-          <div><label>MCQs</label><input id="assessMcq" type="number" value="3" /></div>
-          <div><label>SAQs</label><input id="assessSaq" type="number" value="1" /></div>
-        </div>
-        <button onclick="createAssessment()">Generate</button>
-        <div id="assessment-list"></div>
+  <div id="main-col">
+    <div id="topbar">
+      <div id="topbar-title"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-home"/></svg> <span id="topbar-title-text">Dashboard</span></div>
+      <div id="topbar-actions">
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle theme">
+          <svg class="icon-sm" id="theme-icon-app" viewBox="0 0 24 24"><use href="#ic-moon"/></svg>
+        </button>
       </div>
     </div>
 
-    <div id="student-course-tools" class="hidden">
-      <div class="tabs">
-        <button id="tab-btn-ask" onclick="showStudentTab('ask')">Ask ASDT</button>
-        <button id="tab-btn-learning" onclick="showStudentTab('learning')">My Learning</button>
-        <button id="tab-btn-exams" onclick="showStudentTab('exams')">Assessments</button>
-        <button id="tab-btn-report" onclick="showStudentTab('report')">Performance Report</button>
+    <div id="main">
+
+      <!-- ============ DASHBOARD (Home) ============ -->
+      <div id="view-dashboard" class="view">
+        <div class="page-header">
+          <div>
+            <h1 id="dashboard-greeting">Welcome back</h1>
+            <div class="sub" id="dashboard-subline"></div>
+          </div>
+        </div>
+        <div class="stat-grid" id="dashboard-stats"></div>
+
+        <h3 class="eyebrow">Your courses</h3>
+        <div id="dashboard-course-grid" class="course-grid"></div>
+
+        <div id="dashboard-lecturer-cta" class="card hidden">
+          <h2>Create a new course</h2>
+          <p class="muted">Once created, upload material and ATDT will learn from it.</p>
+          <button onclick="showView('courses')"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Go to Courses</button>
+        </div>
+        <div id="dashboard-student-cta" class="card hidden">
+          <h2>Enrol in a course</h2>
+          <p class="muted">Ask your teacher for the enrolment code.</p>
+          <button onclick="showView('courses')"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Go to Courses</button>
+        </div>
       </div>
 
-      <div id="tab-ask" class="card">
-        <p class="muted">You're talking to your own ASDT, which asks ATDT's Tutoring Channel on your behalf and logs every exchange to your learning history.</p>
-        <div id="chat-log"></div>
-        <textarea id="chatInput" placeholder="Ask a question about this course..."></textarea>
-        <button onclick="sendAsk()">Ask</button>
+      <!-- ============ COURSES ============ -->
+      <div id="view-courses" class="view hidden">
+        <div class="page-header"><h1>Courses</h1></div>
+
+        <div id="lecturer-view" class="hidden">
+          <div id="course-list" class="course-grid"></div>
+          <h3 class="eyebrow">Create a course</h3>
+          <div class="card">
+            <input id="newCourseTitle" placeholder="Course title" />
+            <input id="newCourseSubject" placeholder="Subject area" />
+            <textarea id="newCourseDesc" placeholder="Description"></textarea>
+            <button onclick="createCourse()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Create</button>
+          </div>
+        </div>
+
+        <div id="student-view" class="hidden">
+          <div id="student-course-list" class="course-grid"></div>
+          <h3 class="eyebrow">Enrol in a course</h3>
+          <div class="card">
+            <input id="enrolCode" placeholder="Enrolment code from your teacher" />
+            <button onclick="enrol()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-plus"/></svg> Enrol</button>
+          </div>
+        </div>
       </div>
 
-      <div id="tab-learning" class="card hidden">
-        <button onclick="syncAsdt()">Sync my progress with ATDT</button>
-        <p id="sync-status" class="muted"></p>
-        <h3>Mastery by topic</h3>
-        <div id="mastery-list"><p class="muted">Sync to see your mastery per topic.</p></div>
-        <h3>Gaps</h3>
-        <div id="gap-list"><p class="muted">No gaps loaded yet.</p></div>
+      <!-- ============ PROFILE ============ -->
+      <div id="view-profile" class="view hidden">
+        <div class="page-header"><h1>Profile</h1></div>
+        <div class="card" style="max-width:420px">
+          <div style="display:flex;align-items:center;gap:.9rem;margin-bottom:.5rem">
+            <div class="avatar" id="profile-avatar" style="width:52px;height:52px;font-size:1.1rem;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--primary-soft);color:var(--primary);font-weight:800"></div>
+            <div>
+              <p style="margin:0"><b id="profile-name"></b></p>
+              <span class="badge-role" id="profile-role"></span>
+            </div>
+          </div>
+          <p class="muted" id="profile-email"></p>
+          <button class="danger" onclick="logout()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-logout"/></svg> Log out</button>
+        </div>
       </div>
 
-      <div id="tab-exams" class="card hidden">
-        <div id="student-assessment-list"></div>
-        <div id="take-assessment-area"></div>
+      <!-- ============ COURSE DETAIL ============ -->
+      <div id="course-detail" class="view hidden">
+        <nav class="crumb"><button class="ghost" onclick="closeCourse()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-chevron-left"/></svg> Back to courses</button></nav>
+        <div class="page-header">
+          <h1><span id="course-title"></span> <span class="tag" id="course-code-wrap"><span class="dot"></span><span id="course-code"></span></span></h1>
+        </div>
+
+        <div id="lecturer-course-tools" class="hidden">
+          <div class="card">
+            <h2><svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align:-2px;color:var(--primary)"><use href="#ic-upload"/></svg> Upload course material — ATDT learns from this</h2>
+            <p class="muted">PDF, DOCX, or TXT. Once ingested, ATDT can teach, tutor, and examine on it.</p>
+            <input id="docFile" type="file" />
+            <button onclick="uploadDoc()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-upload"/></svg> Upload &amp; ingest</button>
+            <div id="doc-list"></div>
+          </div>
+          <div class="card">
+            <h2>Generate teaching material</h2>
+            <div class="row">
+              <select id="materialType">
+                <option value="lesson_plan">Lesson plan</option>
+                <option value="summary">Summary</option>
+                <option value="revision_notes">Revision notes</option>
+                <option value="practice_questions">Practice questions</option>
+              </select>
+              <input id="materialTopic" placeholder="Topic (optional)" />
+            </div>
+            <button onclick="generateMaterial()">Generate</button>
+            <div id="material-output"></div>
+          </div>
+          <div class="card">
+            <h2>Create an assessment</h2>
+            <div class="row">
+              <input id="assessTitle" placeholder="Title" />
+              <input id="assessTopic" placeholder="Topic (used by ASDT for gap tracking)" />
+            </div>
+            <div class="row">
+              <div><label>MCQs</label><input id="assessMcq" type="number" value="3" /></div>
+              <div><label>SAQs</label><input id="assessSaq" type="number" value="1" /></div>
+            </div>
+            <button onclick="createAssessment()">Generate</button>
+            <div id="assessment-list"></div>
+          </div>
+        </div>
+
+        <div id="student-course-tools" class="hidden">
+          <div class="tabs">
+            <button id="tab-btn-ask" onclick="showStudentTab('ask')"><svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align:-3px;margin-right:.3rem"><use href="#ic-chat"/></svg>Ask ASDT</button>
+            <button id="tab-btn-learning" onclick="showStudentTab('learning')"><svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align:-3px;margin-right:.3rem"><use href="#ic-bars"/></svg>My Learning</button>
+            <button id="tab-btn-exams" onclick="showStudentTab('exams')"><svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align:-3px;margin-right:.3rem"><use href="#ic-clipboard"/></svg>Assessments</button>
+            <button id="tab-btn-report" onclick="showStudentTab('report')"><svg class="icon-sm" viewBox="0 0 24 24" style="vertical-align:-3px;margin-right:.3rem"><use href="#ic-graduation"/></svg>Performance Report</button>
+          </div>
+
+          <div id="tab-ask" class="card">
+            <p class="muted">You're talking to your own ASDT, which asks ATDT's Tutoring Channel on your behalf and logs every exchange to your learning history.</p>
+            <div id="chat-log"></div>
+            <textarea id="chatInput" placeholder="Ask a question about this course..."></textarea>
+            <button onclick="sendAsk()">Ask</button>
+          </div>
+
+          <div id="tab-learning" class="card hidden">
+            <button onclick="syncAsdt()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-bars"/></svg> Sync my progress with ATDT</button>
+            <p id="sync-status" class="muted"></p>
+            <h3 class="eyebrow">Mastery by topic</h3>
+            <div id="mastery-list"><p class="muted">Sync to see your mastery per topic.</p></div>
+            <h3 class="eyebrow">Gaps</h3>
+            <div id="gap-list"><p class="muted">No gaps loaded yet.</p></div>
+          </div>
+
+          <div id="tab-exams" class="card hidden">
+            <div id="student-assessment-list"></div>
+            <div id="take-assessment-area"></div>
+          </div>
+
+          <div id="tab-report" class="card hidden">
+            <button onclick="loadReport()">Refresh report</button>
+            <div id="report-output"></div>
+          </div>
+        </div>
       </div>
 
-      <div id="tab-report" class="card hidden">
-        <button onclick="loadReport()">Refresh report</button>
-        <div id="report-output"></div>
-      </div>
     </div>
   </div>
 </div>
@@ -188,6 +589,27 @@ let token = localStorage.getItem('atdt_token') || '';
 let me = null;
 let currentCourse = null;
 let isRegisterMode = false;
+let cachedCourses = [];
+
+// ---------- Theme ----------
+
+function applyTheme(mode) {
+  document.documentElement.setAttribute('data-theme', mode);
+  ['theme-icon', 'theme-icon-app'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = `<use href="#ic-${mode === 'dark' ? 'sun' : 'moon'}"/>`;
+  });
+}
+function toggleTheme() {
+  const current = localStorage.getItem('theme') ||
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const next = current === 'dark' ? 'light' : 'dark';
+  localStorage.setItem('theme', next);
+  applyTheme(next);
+}
+applyTheme(localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+
+// ---------- API ----------
 
 async function apiCall(base, path, opts = {}) {
   const headers = opts.headers || {};
@@ -208,6 +630,7 @@ const asdt = (path, opts) => apiCall(asdtBase, path, opts);
 function toggleRegister() {
   isRegisterMode = !isRegisterMode;
   document.getElementById('register-extra').classList.toggle('hidden', !isRegisterMode);
+  document.getElementById('auth-heading').textContent = isRegisterMode ? 'Create your account' : 'Sign in';
 }
 
 async function login() {
@@ -237,29 +660,108 @@ async function login() {
 function logout() {
   token = '';
   localStorage.removeItem('atdt_token');
-  document.getElementById('auth-section').classList.remove('hidden');
-  document.getElementById('app-section').classList.add('hidden');
+  document.getElementById('landing').classList.remove('hidden');
+  document.getElementById('app-shell').classList.remove('active');
   document.getElementById('course-detail').classList.add('hidden');
+}
+
+function initials(name) {
+  return (name || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || '').join('');
 }
 
 async function afterLogin() {
   me = await atdt('/auth/me');
-  document.getElementById('auth-section').classList.add('hidden');
-  document.getElementById('app-section').classList.remove('hidden');
-  document.getElementById('whoami').innerHTML = `${me.full_name} <span class="badge-role">${me.role === 'lecturer' ? 'Teacher' : 'Student'}</span>`;
+  document.getElementById('landing').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('active');
+
+  const roleLabel = me.role === 'lecturer' ? 'Teacher' : 'Student';
+  document.getElementById('whoami-initial').textContent = initials(me.full_name);
+  document.getElementById('whoami-name').textContent = me.full_name;
+  document.getElementById('whoami-role').textContent = roleLabel;
+  document.getElementById('profile-avatar').textContent = initials(me.full_name);
+  document.getElementById('profile-name').textContent = me.full_name;
+  document.getElementById('profile-role').textContent = roleLabel;
+  document.getElementById('profile-email').textContent = me.email || '';
+
   document.getElementById('lecturer-view').classList.toggle('hidden', me.role !== 'lecturer');
   document.getElementById('student-view').classList.toggle('hidden', me.role !== 'student');
-  if (me.role === 'lecturer') loadLecturerCourses(); else loadStudentCourses();
+  document.getElementById('dashboard-lecturer-cta').classList.toggle('hidden', me.role !== 'lecturer');
+  document.getElementById('dashboard-student-cta').classList.toggle('hidden', me.role !== 'student');
+  document.getElementById('dashboard-greeting').textContent = `Welcome back, ${me.full_name.split(' ')[0]}`;
+  document.getElementById('dashboard-subline').textContent = me.role === 'lecturer'
+    ? 'Here’s what’s happening across your courses.'
+    : 'Here’s where your learning stands today.';
+
+  showView('dashboard');
+  await refreshCourses();
 }
 
-async function loadLecturerCourses() {
-  const courses = await atdt('/courses');
+// ---------- Navigation ----------
+
+const VIEW_META = {
+  dashboard: { title: 'Dashboard', icon: 'home' },
+  courses: { title: 'Courses', icon: 'book' },
+  profile: { title: 'Profile', icon: 'user' },
+};
+
+function showView(name) {
+  document.getElementById('course-detail').classList.add('hidden');
+  ['dashboard', 'courses', 'profile'].forEach(v => {
+    document.getElementById(`view-${v}`).classList.toggle('hidden', v !== name);
+    document.getElementById(`nav-${v}`)?.classList.toggle('active', v === name);
+  });
+  const meta = VIEW_META[name];
+  if (meta) {
+    document.getElementById('topbar-title-text').textContent = meta.title;
+    document.querySelector('#topbar-title use').setAttribute('href', `#ic-${meta.icon}`);
+  }
+}
+
+async function refreshCourses() {
+  cachedCourses = await atdt('/courses');
+  if (me.role === 'lecturer') renderLecturerCourses(); else renderStudentCourses();
+  renderDashboard();
+}
+
+function statCardHtml(icon, num, label) {
+  return `<div class="card stat-card">
+    <span class="stat-ic"><svg class="icon" viewBox="0 0 24 24"><use href="#ic-${icon}"/></svg></span>
+    <div><div class="num">${num}</div><div class="label">${label}</div></div>
+  </div>`;
+}
+
+function renderDashboard() {
+  const stats = document.getElementById('dashboard-stats');
+  if (me.role === 'lecturer') {
+    stats.innerHTML =
+      statCardHtml('book', cachedCourses.length, 'Courses created') +
+      statCardHtml('check', cachedCourses.filter(c => c.enrolment_code).length, 'Active enrolment codes');
+  } else {
+    stats.innerHTML = statCardHtml('book', cachedCourses.length, 'Courses enrolled');
+  }
+  const grid = document.getElementById('dashboard-course-grid');
+  const items = cachedCourses.slice(0, 6);
+  grid.innerHTML = items.map(courseCardHtml).join('') ||
+    `<div class="empty-state" style="grid-column:1/-1"><svg class="icon-lg" viewBox="0 0 24 24"><use href="#ic-empty"/></svg><p>${me.role === 'lecturer' ? 'No courses yet — create your first one.' : 'Not enrolled in any course yet.'}</p></div>`;
+}
+
+function courseCardHtml(c) {
+  return `<div class="card course-card">
+    <div class="top-row">
+      <div>
+        <span class="subject">${escapeHtml(c.subject_area || 'General')}</span><br/>
+        <span class="title">${escapeHtml(c.title)}</span>
+      </div>
+    </div>
+    ${c.enrolment_code ? `<span class="tag"><span class="dot"></span>code: ${c.enrolment_code}</span>` : ''}
+    <p class="muted">${escapeHtml(c.description || '')}</p>
+    <button onclick="openCourse(${c.id})">Open</button>
+  </div>`;
+}
+
+function renderLecturerCourses() {
   const el = document.getElementById('course-list');
-  el.innerHTML = courses.map(c =>
-    `<div class="card"><b>${escapeHtml(c.title)}</b> <span class="tag">code: ${c.enrolment_code}</span>
-     <p class="muted">${escapeHtml(c.description || '')}</p>
-     <button onclick="openCourse(${c.id})">Open</button></div>`
-  ).join('') || '<p class="muted">No courses yet.</p>';
+  el.innerHTML = cachedCourses.map(courseCardHtml).join('') || '<p class="muted">No courses yet.</p>';
 }
 
 async function createCourse() {
@@ -268,28 +770,28 @@ async function createCourse() {
     subject_area: document.getElementById('newCourseSubject').value,
     description: document.getElementById('newCourseDesc').value,
   }});
-  loadLecturerCourses();
+  await refreshCourses();
 }
 
-async function loadStudentCourses() {
-  const courses = await atdt('/courses');
+function renderStudentCourses() {
   const el = document.getElementById('student-course-list');
-  el.innerHTML = courses.map(c =>
-    `<div class="card"><b>${escapeHtml(c.title)}</b><p class="muted">${escapeHtml(c.description || '')}</p>
-     <button onclick="openCourse(${c.id})">Open</button></div>`
-  ).join('') || '<p class="muted">Not enrolled in any course yet.</p>';
+  el.innerHTML = cachedCourses.map(courseCardHtml).join('') || '<p class="muted">Not enrolled in any course yet.</p>';
 }
 
 async function enrol() {
   await atdt('/courses/enrol', { method: 'POST', json: { enrolment_code: document.getElementById('enrolCode').value } });
-  loadStudentCourses();
+  await refreshCourses();
 }
 
 async function openCourse(id) {
   currentCourse = await atdt(`/courses/${id}`);
+  ['dashboard', 'courses', 'profile'].forEach(v => document.getElementById(`view-${v}`).classList.add('hidden'));
   document.getElementById('course-detail').classList.remove('hidden');
+  document.getElementById('topbar-title-text').textContent = currentCourse.title;
+  document.querySelector('#topbar-title use').setAttribute('href', '#ic-book');
   document.getElementById('course-title').textContent = currentCourse.title;
-  document.getElementById('course-code').textContent = currentCourse.enrolment_code;
+  document.getElementById('course-code-wrap').classList.toggle('hidden', !currentCourse.enrolment_code);
+  document.getElementById('course-code').textContent = currentCourse.enrolment_code || '';
   document.getElementById('lecturer-course-tools').classList.toggle('hidden', me.role !== 'lecturer');
   document.getElementById('student-course-tools').classList.toggle('hidden', me.role !== 'student');
   if (me.role === 'lecturer') {
@@ -308,6 +810,7 @@ async function openCourse(id) {
 function closeCourse() {
   currentCourse = null;
   document.getElementById('course-detail').classList.add('hidden');
+  showView('courses');
 }
 
 function showStudentTab(name) {
@@ -321,10 +824,15 @@ function showStudentTab(name) {
 
 // ---------- Teacher: documents, materials, assessments ----------
 
+const STATUS_ST = { ready: 'good', published: 'good', resolved: 'good', processing: 'warning', negotiating: 'warning', draft: 'warning', failed: 'critical', open: 'critical' };
+
 async function loadDocs() {
   const docs = await atdt(`/courses/${currentCourse.id}/documents`);
   document.getElementById('doc-list').innerHTML = docs.map(d =>
-    `<div class="muted">${escapeHtml(d.filename)} — ${d.status}${d.status === 'ready' ? ` (${d.chunk_count} chunks)` : ''}${d.status === 'failed' ? `: ${escapeHtml(d.error)}` : ''}</div>`
+    `<div class="muted" style="padding:.4rem 0;border-top:1px solid var(--border)">${escapeHtml(d.filename)}
+      <span class="tag st-${STATUS_ST[d.status] || 'warning'}"><span class="dot"></span>${d.status}</span>
+      ${d.status === 'ready' ? ` <span class="faint">${d.chunk_count} chunks</span>` : ''}
+      ${d.status === 'failed' ? ` <span class="faint">${escapeHtml(d.error)}</span>` : ''}</div>`
   ).join('');
 }
 
@@ -367,7 +875,7 @@ async function loadAssessments() {
   const rows = await Promise.all(list.map(async a => {
     const questions = await atdt(`/courses/${currentCourse.id}/examination/assessments/${a.id}/review`);
     const qhtml = questions.map(q => `<li>[${q.type}] ${escapeHtml(q.text)}</li>`).join('');
-    return `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="tag">${escapeHtml(a.topic || 'no topic')}</span> <span class="tag">${a.status}</span>
+    return `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="tag"><span class="dot"></span>${escapeHtml(a.topic || 'no topic')}</span> <span class="tag st-${STATUS_ST[a.status] || 'warning'}"><span class="dot"></span>${a.status}</span>
       <ul>${qhtml}</ul>
       ${a.status === 'draft' ? `<button onclick="publishAssessment(${a.id})">Publish</button>` : ''}</div>`;
   }));
@@ -411,10 +919,10 @@ function renderMastery(states) {
   const el = document.getElementById('mastery-list');
   if (!states.length) { el.innerHTML = '<p class="muted">No graded assessments yet.</p>'; return; }
   el.innerHTML = states.map(s => `
-    <div>
-      <div class="row" style="align-items:center">
+    <div style="margin-bottom:.6rem">
+      <div class="row" style="align-items:center;gap:.5rem">
         <span>${escapeHtml(s.topic)}</span>
-        <span class="muted" style="flex:0 0 auto">${Math.round(s.mastery * 100)}%</span>
+        <span class="muted" style="flex:0 0 auto;font-variant-numeric:tabular-nums">${Math.round(s.mastery * 100)}%</span>
       </div>
       <div class="meter"><div style="width:${Math.round(s.mastery * 100)}%"></div></div>
     </div>`).join('');
@@ -439,7 +947,7 @@ async function loadGaps() {
   const el = document.getElementById('gap-list');
   el.innerHTML = gaps.map(g => `
     <div class="card">
-      <b>${escapeHtml(g.topic)}</b> <span class="tag gap-${g.status}">${g.status}</span>
+      <b>${escapeHtml(g.topic)}</b> <span class="tag st-${g.status === 'resolved' ? 'good' : g.status === 'negotiating' ? 'warning' : 'critical'}"><span class="dot"></span>${g.status}</span>
       <span class="muted">severity ${(g.severity * 100).toFixed(0)}%</span>
       ${g.status !== 'resolved' ? `<button class="small" onclick="negotiate(${g.id})">Ask ASDT for help</button>` : ''}
       <div id="negotiation-${g.id}">${renderNegotiation(g.id)}</div>
@@ -460,7 +968,7 @@ async function loadStudentAssessments() {
   const list = await atdt(`/courses/${currentCourse.id}/examination/assessments/published`);
   const el = document.getElementById('student-assessment-list');
   el.innerHTML = list.map(a =>
-    `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="tag">${escapeHtml(a.topic || 'no topic')}</span>
+    `<div class="card"><b>${escapeHtml(a.title)}</b> <span class="tag"><span class="dot"></span>${escapeHtml(a.topic || 'no topic')}</span>
      <span class="muted">(${a.mcq_count} MCQ, ${a.saq_count} SAQ, ${a.time_limit_minutes} min)</span>
      <button onclick="loadTakeAssessment(${a.id})">Take</button></div>`
   ).join('') || '<p class="muted">No published assessments yet.</p>';
@@ -471,7 +979,7 @@ async function loadTakeAssessment(id) {
   const area = document.getElementById('take-assessment-area');
   area.innerHTML = questions.map(q => {
     if (q.type === 'mcq') {
-      const opts = q.options.map(o => `<label><input type="radio" name="q${q.id}" value="${escapeAttr(o)}"> ${escapeHtml(o)}</label>`).join('');
+      const opts = q.options.map(o => `<label style="display:block;font-weight:400;color:var(--text);margin:.3rem 0"><input type="radio" name="q${q.id}" value="${escapeAttr(o)}" style="width:auto;display:inline-block;vertical-align:middle;margin-right:.4rem"> ${escapeHtml(o)}</label>`).join('');
       return `<div class="card"><b>${escapeHtml(q.text)}</b>${opts}</div>`;
     }
     return `<div class="card"><b>${escapeHtml(q.text)}</b><textarea id="ans${q.id}"></textarea></div>`;
@@ -514,14 +1022,18 @@ async function loadReport() {
     <div class="card">
       <b>Overall mastery: ${Math.round(report.overall_mastery * 100)}%</b>
       <div class="meter"><div style="width:${Math.round(report.overall_mastery * 100)}%"></div></div>
-      <p class="muted">${report.open_gaps} open · ${report.negotiating_gaps} negotiating · ${report.resolved_gaps} resolved</p>
+      <p class="muted">
+        <span class="tag st-critical"><span class="dot"></span>${report.open_gaps} open</span>
+        <span class="tag st-warning"><span class="dot"></span>${report.negotiating_gaps} negotiating</span>
+        <span class="tag st-good"><span class="dot"></span>${report.resolved_gaps} resolved</span>
+      </p>
     </div>
-    <h3>Topics</h3>
-    ${report.topics.map(t => `<div>${escapeHtml(t.topic)}: ${Math.round(t.mastery * 100)}% (${t.sample_count} attempt(s))</div>`).join('') || '<p class="muted">None yet.</p>'}
-    <h3>Recent negotiations</h3>
-    ${report.recent_negotiations.map(n => `<div class="card"><span class="muted">${new Date(n.created_at).toLocaleString()}</span><div class="bubble">${escapeHtml(n.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
-    <h3>Recent questions asked</h3>
-    ${report.recent_interactions.map(i => `<div class="card"><span class="muted">${new Date(i.created_at).toLocaleString()}</span><p><b>Q:</b> ${escapeHtml(i.question)}</p><div class="bubble">${escapeHtml(i.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
+    <h3 class="eyebrow">Topics</h3>
+    ${report.topics.map(t => `<div style="padding:.3rem 0">${escapeHtml(t.topic)}: <b>${Math.round(t.mastery * 100)}%</b> <span class="faint">(${t.sample_count} attempt(s))</span></div>`).join('') || '<p class="muted">None yet.</p>'}
+    <h3 class="eyebrow">Recent negotiations</h3>
+    ${report.recent_negotiations.map(n => `<div class="card"><span class="faint">${new Date(n.created_at).toLocaleString()}</span><div class="bubble">${escapeHtml(n.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
+    <h3 class="eyebrow">Recent questions asked</h3>
+    ${report.recent_interactions.map(i => `<div class="card"><span class="faint">${new Date(i.created_at).toLocaleString()}</span><p><b>Q:</b> ${escapeHtml(i.question)}</p><div class="bubble">${escapeHtml(i.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
   `;
 }
 
