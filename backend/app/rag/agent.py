@@ -72,7 +72,7 @@ async def answer_question(
         "complete answer where the question looks like an assessment question.\n\n"
         f"COURSE MATERIAL:\n{context}"
     )
-    user_prompt = f"{history}\nStudent question: {question}" if history else question
+    user_prompt = f"{history}\nStudent question: {question}" if history else f"Student question: {question}"
 
     answer = await generate(system_prompt, user_prompt)
     return answer, chunks
