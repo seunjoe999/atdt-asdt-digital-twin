@@ -4,7 +4,10 @@
 <meta charset="utf-8" />
 <title>Twinclass — ATDT + ASDT Digital Twin Classroom</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232a78d6'/%3E%3Cpath d='M9 20V12l7-4 7 4v8l-7 4-7-4Z' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M9 12l7 4 7-4' fill='none' stroke='white' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23101d42'/%3E%3Cpath d='M9 20V12l7-4 7 4v8l-7 4-7-4Z' fill='none' stroke='%23ff6f5e' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M9 12l7 4 7-4' fill='none' stroke='%23ff6f5e' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
@@ -34,6 +37,18 @@
     --shadow-lg: 0 4px 8px rgba(11,11,11,.04), 0 16px 40px -12px rgba(11,11,11,.16);
     --sidebar-w: 248px;
     --topbar-h: 64px;
+    --font-heading: 'Baloo 2', 'Segoe UI', system-ui, sans-serif;
+    --navy: #101d42;
+    --navy-2: #172a5c;
+    --navy-ink: #f3f5ff;
+    --navy-ink-muted: #aab4e0;
+    --navy-card: rgba(255,255,255,0.06);
+    --navy-card-border: rgba(255,255,255,0.12);
+    --coral: #ff6f5e;
+    --coral-dark: #f0503d;
+    --coral-ink: #ffffff;
+    --coral-soft: rgba(255,111,94,0.12);
+    --cyan: #38bdf8;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -96,9 +111,9 @@
     -webkit-font-smoothing: antialiased;
   }
   a { color: var(--primary); }
-  h1, h2, h3 { margin: 0 0 .35rem; font-weight: 700; letter-spacing: -.01em; }
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.05rem; }
+  h1, h2, h3 { margin: 0 0 .35rem; font-weight: 700; letter-spacing: -.01em; font-family: var(--font-heading); }
+  h1 { font-size: 1.6rem; font-weight: 800; }
+  h2 { font-size: 1.1rem; font-weight: 700; }
   h3.eyebrow { font-size: .72rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 700; margin: 1.5rem 0 .6rem; }
   p { margin: .25rem 0; }
   label { display: block; margin: .6rem 0 .3rem; font-size: .78rem; color: var(--text-muted); font-weight: 600; }
@@ -109,20 +124,22 @@
   input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: 1px; }
   textarea { min-height: 4.5rem; resize: vertical; font-family: inherit; }
   button {
-    cursor: pointer; width: auto; padding: .62rem 1.1rem; margin-top: .5rem;
-    background: var(--primary); color: var(--primary-ink); border: 1px solid transparent; font-weight: 600;
+    cursor: pointer; width: auto; padding: .62rem 1.2rem; margin-top: .5rem;
+    background: var(--coral); color: var(--coral-ink); border: 1px solid transparent; font-weight: 700;
+    border-radius: 12px;
     display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
     transition: filter .15s ease, transform .05s ease, background .15s ease;
+    box-shadow: 0 2px 10px -4px rgba(255,111,94,0.55);
   }
-  button:hover { filter: brightness(1.08); }
+  button:hover { filter: brightness(1.06); }
   button:active { transform: scale(.98); }
-  button.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); }
+  button.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border-strong); box-shadow: none; }
   button.secondary:hover { background: var(--surface-2); filter: none; }
   button.small { padding: .4rem .75rem; margin: 0 0 0 .5rem; font-size: .8rem; width: auto; }
-  button.ghost { background: none; color: var(--primary); padding: .4rem .5rem; border: none; }
-  button.ghost:hover { background: var(--primary-soft); filter: none; }
+  button.ghost { background: none; color: var(--coral-dark); padding: .4rem .5rem; border: none; box-shadow: none; }
+  button.ghost:hover { background: var(--coral-soft); filter: none; }
   button.block { width: 100%; }
-  button.danger { background: var(--critical); }
+  button.danger { background: var(--critical); box-shadow: none; }
   button svg { flex: none; }
 
   .row { display: flex; gap: .65rem; flex-wrap: wrap; align-items: flex-end; }
@@ -159,15 +176,48 @@
     color: var(--text); padding: .7rem 1.1rem; font-weight: 600; white-space: nowrap;
   }
   .tabs button:hover { background: var(--surface-2); opacity: .85; }
-  .tabs button.active { opacity: 1; color: var(--primary); box-shadow: inset 0 -2px 0 var(--primary); }
+  .tabs button.active { opacity: 1; color: var(--coral-dark); box-shadow: inset 0 -2px 0 var(--coral); }
 
   .meter { height: 8px; border-radius: 999px; background: var(--track); overflow: hidden; margin: .35rem 0; }
   .meter > div { height: 100%; border-radius: 999px; background: var(--primary); }
+  .meter.st-good > div { background: var(--good); }
+  .meter.st-warning > div { background: var(--warning); }
+  .meter.st-critical > div { background: var(--critical); }
 
   .badge-role {
     font-size: .7rem; padding: .2rem .6rem; border-radius: 999px; background: var(--primary-soft);
     color: var(--primary); font-weight: 700; letter-spacing: .01em;
   }
+
+  /* ---------- Knowledge Map: navy "hero" panel for mastery/gaps ---------- */
+  .knowledge-map {
+    background: linear-gradient(165deg, var(--navy), var(--navy-2));
+    color: var(--navy-ink); border-radius: var(--radius-lg); padding: 1.3rem 1.4rem;
+    box-shadow: var(--shadow-lg); margin: .9rem 0;
+  }
+  .knowledge-map h2 { color: var(--navy-ink); display: flex; align-items: center; gap: .5rem; }
+  .knowledge-map .sub { color: var(--navy-ink-muted); font-size: .82rem; margin-bottom: 1rem; }
+  .km-row { margin-bottom: 1rem; }
+  .km-row:last-child { margin-bottom: 0; }
+  .km-row .top { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+  .km-row .status-dot { width: 9px; height: 9px; border-radius: 999px; flex: none; }
+  .km-row .status-dot.st-good { background: var(--good); box-shadow: 0 0 0 3px var(--good-soft); }
+  .km-row .status-dot.st-warning { background: var(--warning); box-shadow: 0 0 0 3px var(--warning-soft); }
+  .km-row .status-dot.st-critical { background: var(--critical); box-shadow: 0 0 0 3px var(--critical-soft); }
+  .km-row .topic-name { font-weight: 700; flex: 1; }
+  .km-row .pct { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .km-track { height: 8px; border-radius: 999px; background: rgba(255,255,255,0.14); overflow: hidden; }
+  .km-track > div { height: 100%; border-radius: 999px; }
+  .km-track > div.st-good { background: var(--good); }
+  .km-track > div.st-warning { background: var(--warning); }
+  .km-track > div.st-critical { background: var(--critical); }
+  .km-card {
+    background: var(--navy-card); border: 1px solid var(--navy-card-border); border-radius: 12px;
+    padding: .9rem 1rem; display: flex; align-items: center; gap: .8rem; margin-top: .8rem;
+  }
+  .km-card .cyan-ic { color: var(--cyan); flex: none; }
+  .km-card .label { color: var(--navy-ink-muted); font-size: .78rem; }
+  .km-card .value { font-weight: 800; font-size: 1.05rem; }
   details.config summary { cursor: pointer; font-size: .8rem; color: var(--text-muted); margin: .5rem 0; }
   details.config summary:hover { color: var(--text); }
 
@@ -181,10 +231,10 @@
     padding: 1.1rem 5%; border-bottom: 1px solid var(--border); position: sticky; top: 0;
     background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(8px); z-index: 20;
   }
-  .brand { display: flex; align-items: center; gap: .55rem; font-weight: 800; font-size: 1.1rem; letter-spacing: -.01em; }
+  .brand { display: flex; align-items: center; gap: .55rem; font-weight: 800; font-size: 1.15rem; letter-spacing: -.01em; font-family: var(--font-heading); }
   .brand .logo {
-    width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-    background: var(--primary); color: #fff; flex: none;
+    width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    background: var(--navy); color: var(--coral); flex: none;
   }
   .landing-nav .muted { display: none; }
   @media (min-width: 700px) { .landing-nav .muted { display: block; } }
@@ -193,8 +243,8 @@
     max-width: 1120px; margin: 0 auto; padding: 4rem 5% 2.5rem; display: grid;
     grid-template-columns: 1.05fr .95fr; gap: 3rem; align-items: start;
   }
-  .hero h1 { font-size: 2.5rem; line-height: 1.14; margin-bottom: 1rem; letter-spacing: -.02em; }
-  .hero .accent { color: var(--primary); }
+  .hero h1 { font-size: 2.7rem; line-height: 1.14; margin-bottom: 1rem; letter-spacing: -.02em; font-weight: 800; }
+  .hero .accent { color: var(--coral); }
   .hero p.lead { font-size: 1.06rem; color: var(--text-muted); max-width: 46ch; }
   .pill-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1.4rem; }
   .pill {
@@ -202,7 +252,7 @@
     background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
     padding: .4rem .85rem .4rem .6rem; font-size: .78rem; color: var(--text-muted); font-weight: 600;
   }
-  .pill .icon { color: var(--primary); }
+  .pill .icon { color: var(--coral-dark); }
   .feature-grid {
     max-width: 1120px; margin: .5rem auto 3.5rem; padding: 0 5%; display: grid;
     grid-template-columns: repeat(3, 1fr); gap: 1rem;
@@ -210,7 +260,7 @@
   .feature-grid .card { display: flex; flex-direction: column; gap: .35rem; }
   .feature-grid .fic {
     width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
-    background: var(--primary-soft); color: var(--primary); margin-bottom: .3rem;
+    background: var(--navy); color: var(--coral); margin-bottom: .3rem;
   }
   .feature-grid .card h2 { font-size: 1rem; }
   .landing-footer { text-align: center; padding: 2.5rem 5% 3rem; color: var(--text-faint); font-size: .8rem; }
@@ -223,28 +273,30 @@
   #app-shell { display: none; min-height: 100vh; }
   #app-shell.active { display: grid; grid-template-columns: var(--sidebar-w) 1fr; }
   #sidebar {
-    background: var(--surface); border-right: 1px solid var(--border);
+    background: var(--navy); border-right: 1px solid rgba(255,255,255,0.06);
     display: flex; flex-direction: column; padding: 1.1rem .9rem; position: sticky; top: 0; height: 100vh;
   }
-  #sidebar .brand { padding: .3rem .5rem 1.6rem; }
+  #sidebar .brand { padding: .3rem .5rem 1.6rem; color: var(--navy-ink); }
+  #sidebar .brand .logo { background: rgba(255,255,255,0.1); color: var(--coral); }
   .nav-link {
     display: flex; align-items: center; gap: .7rem; padding: .62rem .75rem; border-radius: 10px;
-    color: var(--text-muted); font-weight: 600; font-size: .88rem; cursor: pointer; margin-bottom: .15rem;
+    color: var(--navy-ink-muted); font-weight: 600; font-size: .88rem; cursor: pointer; margin-bottom: .15rem;
     background: none; border: none; width: 100%; text-align: left;
   }
-  .nav-link:hover { background: var(--surface-2); color: var(--text); }
-  .nav-link.active { background: var(--primary-soft); color: var(--primary); }
+  .nav-link:hover { background: rgba(255,255,255,0.06); color: var(--navy-ink); }
+  .nav-link.active { background: var(--coral); color: var(--coral-ink); }
   .nav-link .icon { flex: none; color: inherit; }
   #sidebar .spacer { flex: 1; }
-  #sidebar-user { border-top: 1px solid var(--border); padding-top: .9rem; margin-top: .5rem; display: flex; align-items: center; gap: .6rem; }
+  #sidebar-user { border-top: 1px solid rgba(255,255,255,0.1); padding-top: .9rem; margin-top: .5rem; display: flex; align-items: center; gap: .6rem; }
   #sidebar-user .avatar {
-    width: 34px; height: 34px; border-radius: 999px; background: var(--primary-soft); color: var(--primary);
+    width: 34px; height: 34px; border-radius: 999px; background: rgba(255,255,255,0.12); color: var(--coral);
     display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; flex: none;
   }
   #sidebar-user .meta { min-width: 0; flex: 1; }
-  #sidebar-user .who { font-size: .83rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #sidebar-user .role { font-size: .72rem; color: var(--text-muted); }
-  #sidebar-user button.ghost { padding: .4rem; flex: none; }
+  #sidebar-user .who { font-size: .83rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--navy-ink); }
+  #sidebar-user .role { font-size: .72rem; color: var(--navy-ink-muted); }
+  #sidebar-user button.ghost { padding: .4rem; flex: none; color: var(--navy-ink-muted); }
+  #sidebar-user button.ghost:hover { background: rgba(255,255,255,0.08); color: var(--navy-ink); }
 
   #main-col { display: flex; flex-direction: column; min-height: 100vh; }
   #topbar {
@@ -554,11 +606,16 @@
             <button onclick="sendAsk()">Ask</button>
           </div>
 
-          <div id="tab-learning" class="card hidden">
-            <button onclick="syncAsdt()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-bars"/></svg> Sync my progress with ATDT</button>
-            <p id="sync-status" class="muted"></p>
-            <h3 class="eyebrow">Mastery by topic</h3>
-            <div id="mastery-list"><p class="muted">Sync to see your mastery per topic.</p></div>
+          <div id="tab-learning" class="hidden">
+            <div class="card">
+              <button onclick="syncAsdt()"><svg class="icon-sm" viewBox="0 0 24 24"><use href="#ic-bars"/></svg> Sync my progress with ATDT</button>
+              <p id="sync-status" class="muted"></p>
+            </div>
+            <div class="knowledge-map">
+              <h2><svg class="icon" viewBox="0 0 24 24"><use href="#ic-graduation"/></svg> Knowledge Map</h2>
+              <div class="sub">Your mastery per topic, from ATDT's graded assessments</div>
+              <div id="mastery-list"><p style="color:var(--navy-ink-muted)">Sync to see your mastery per topic.</p></div>
+            </div>
             <h3 class="eyebrow">Gaps</h3>
             <div id="gap-list"><p class="muted">No gaps loaded yet.</p></div>
           </div>
@@ -915,17 +972,28 @@ async function syncAsdt() {
   loadGaps();
 }
 
+function masteryStatus(mastery) {
+  if (mastery >= 0.8) return 'good';
+  if (mastery >= 0.5) return 'warning';
+  return 'critical';
+}
+
 function renderMastery(states) {
   const el = document.getElementById('mastery-list');
-  if (!states.length) { el.innerHTML = '<p class="muted">No graded assessments yet.</p>'; return; }
-  el.innerHTML = states.map(s => `
-    <div style="margin-bottom:.6rem">
-      <div class="row" style="align-items:center;gap:.5rem">
-        <span>${escapeHtml(s.topic)}</span>
-        <span class="muted" style="flex:0 0 auto;font-variant-numeric:tabular-nums">${Math.round(s.mastery * 100)}%</span>
+  if (!states.length) { el.innerHTML = '<p style="color:var(--navy-ink-muted)">No graded assessments yet.</p>'; return; }
+  el.innerHTML = states.map(s => {
+    const pct = Math.round(s.mastery * 100);
+    const st = masteryStatus(s.mastery);
+    return `
+    <div class="km-row">
+      <div class="top">
+        <span class="status-dot st-${st}"></span>
+        <span class="topic-name">${escapeHtml(s.topic)}</span>
+        <span class="pct">${pct}%</span>
       </div>
-      <div class="meter"><div style="width:${Math.round(s.mastery * 100)}%"></div></div>
-    </div>`).join('');
+      <div class="km-track"><div class="st-${st}" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join('');
 }
 
 // Negotiation results are cached client-side by gap id and re-injected on
@@ -1018,18 +1086,29 @@ async function loadReport() {
   const el = document.getElementById('report-output');
   el.innerHTML = '<p class="muted">Loading...</p>';
   const report = await asdt(`/asdt/report?course_id=${currentCourse.id}`);
+  const overallPct = Math.round(report.overall_mastery * 100);
+  const overallSt = masteryStatus(report.overall_mastery);
   el.innerHTML = `
-    <div class="card">
-      <b>Overall mastery: ${Math.round(report.overall_mastery * 100)}%</b>
-      <div class="meter"><div style="width:${Math.round(report.overall_mastery * 100)}%"></div></div>
-      <p class="muted">
-        <span class="tag st-critical"><span class="dot"></span>${report.open_gaps} open</span>
-        <span class="tag st-warning"><span class="dot"></span>${report.negotiating_gaps} negotiating</span>
-        <span class="tag st-good"><span class="dot"></span>${report.resolved_gaps} resolved</span>
-      </p>
+    <div class="knowledge-map">
+      <h2><svg class="icon" viewBox="0 0 24 24"><use href="#ic-graduation"/></svg> Overall mastery</h2>
+      <div class="km-row" style="margin-bottom:.5rem">
+        <div class="top">
+          <span class="status-dot st-${overallSt}"></span>
+          <span class="pct" style="font-size:1.3rem">${overallPct}%</span>
+        </div>
+        <div class="km-track"><div class="st-${overallSt}" style="width:${overallPct}%"></div></div>
+      </div>
+      <div class="row" style="gap:.6rem">
+        <div class="km-card"><svg class="icon cyan-ic" viewBox="0 0 24 24"><use href="#ic-x"/></svg><div><div class="value">${report.open_gaps}</div><div class="label">Open</div></div></div>
+        <div class="km-card"><svg class="icon cyan-ic" viewBox="0 0 24 24"><use href="#ic-warn"/></svg><div><div class="value">${report.negotiating_gaps}</div><div class="label">Negotiating</div></div></div>
+        <div class="km-card"><svg class="icon cyan-ic" viewBox="0 0 24 24"><use href="#ic-check"/></svg><div><div class="value">${report.resolved_gaps}</div><div class="label">Resolved</div></div></div>
+      </div>
+      ${report.topics.length ? '<h3 class="eyebrow" style="color:var(--navy-ink-muted)">Topics</h3>' + report.topics.map(t => {
+        const pct = Math.round(t.mastery * 100);
+        const st = masteryStatus(t.mastery);
+        return `<div class="km-row"><div class="top"><span class="status-dot st-${st}"></span><span class="topic-name">${escapeHtml(t.topic)}</span><span class="pct">${pct}%</span></div><div class="km-track"><div class="st-${st}" style="width:${pct}%"></div></div></div>`;
+      }).join('') : ''}
     </div>
-    <h3 class="eyebrow">Topics</h3>
-    ${report.topics.map(t => `<div style="padding:.3rem 0">${escapeHtml(t.topic)}: <b>${Math.round(t.mastery * 100)}%</b> <span class="faint">(${t.sample_count} attempt(s))</span></div>`).join('') || '<p class="muted">None yet.</p>'}
     <h3 class="eyebrow">Recent negotiations</h3>
     ${report.recent_negotiations.map(n => `<div class="card"><span class="faint">${new Date(n.created_at).toLocaleString()}</span><div class="bubble">${escapeHtml(n.atdt_answer)}</div></div>`).join('') || '<p class="muted">None yet.</p>'}
     <h3 class="eyebrow">Recent questions asked</h3>
