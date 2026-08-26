@@ -65,6 +65,14 @@ class EnrolRequest(BaseModel):
     enrolment_code: str
 
 
+class EnrolledStudentOut(BaseModel):
+    id: int
+    email: str
+    full_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # ---------- Documents ----------
 
 

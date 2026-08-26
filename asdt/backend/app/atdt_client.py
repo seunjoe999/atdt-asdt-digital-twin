@@ -33,6 +33,13 @@ async def get_my_attempts(token: str, course_id: int) -> list[dict]:
     return await _get(f"/courses/{course_id}/examination/my-attempts", token)
 
 
+async def get_course(token: str, course_id: int) -> dict:
+    """Used to prove a caller has lecturer access to a course before ASDT
+    hands back one of that course's students' knowledge state — ATDT's own
+    /courses/{id} already 403s anyone who isn't the owning lecturer."""
+    return await _get(f"/courses/{course_id}", token)
+
+
 async def ask_tutor(token: str, course_id: int, question: str) -> dict:
     return await _post(f"/courses/{course_id}/tutoring/query", token, {"question": question})
 

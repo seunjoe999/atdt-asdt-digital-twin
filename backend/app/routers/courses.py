@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import get_current_user, require_lecturer, require_student
 from app.models import Course, Enrollment, User, UserRole
-from app.schemas import CourseCreate, CourseOut, EnrolRequest
+from app.schemas import CourseCreate, CourseOut, EnrolRequest, EnrolledStudentOut
 
 router = APIRouter(prefix="/courses", tags=["courses"])
 
@@ -64,6 +64,23 @@ def enrol(
         db.add(Enrollment(student_id=student.id, course_id=course.id))
         db.commit()
     return course
+
+
+@router.get("/{course_id}/students", response_model=list[EnrolledStudentOut])
+def list_students(
+    course_id: int, db: Session = Depends(get_db), lecturer: User = Depends(require_lecturer)
+):
+    """Lets the Teacher Twin see who's enrolled, so it knows which Student
+    Twins it can look up mastery/gaps for."""
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    _ensure_access(db, course, lecturer)
+
+    student_ids = [e.student_id for e in db.query(Enrollment).filter(Enrollment.course_id == course.id)]
+    if not student_ids:
+        return []
+    return db.query(User).filter(User.id.in_(student_ids)).all()
 
 
 def _ensure_access(db: Session, course: Course, user: User) -> None:

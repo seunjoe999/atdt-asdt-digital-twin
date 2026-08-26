@@ -202,19 +202,7 @@ async def ask(
     return interaction
 
 
-@router.get("/report", response_model=PerformanceReport)
-async def performance_report(
-    course_id: int,
-    db: Session = Depends(get_db),
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-):
-    """The "Generate Performance Report" use case (thesis Figure 3.1) — one
-    of the two use cases the thesis flags as crossing the ASDT-ATDT
-    boundary. Aggregates this student's current knowledge state, gap
-    history, and negotiation log for one course.
-    """
-    student, _token = await _resolve_student(db, credentials)
-
+def _build_report(db: Session, student: Student, course_id: int) -> PerformanceReport:
     states = (
         db.query(KnowledgeState)
         .filter(KnowledgeState.student_id == student.id, KnowledgeState.course_id == course_id)
@@ -261,3 +249,59 @@ async def performance_report(
         recent_negotiations=[NegotiationRecordOut.model_validate(n) for n in recent_negotiations],
         recent_interactions=[InteractionOut.model_validate(i) for i in recent_interactions],
     )
+
+
+@router.get("/report", response_model=PerformanceReport)
+async def performance_report(
+    course_id: int,
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    """The "Generate Performance Report" use case (thesis Figure 3.1) — one
+    of the two use cases the thesis flags as crossing the ASDT-ATDT
+    boundary. Aggregates this student's current knowledge state, gap
+    history, and negotiation log for one course.
+    """
+    student, _token = await _resolve_student(db, credentials)
+    return _build_report(db, student, course_id)
+
+
+@router.get("/teacher/report", response_model=PerformanceReport)
+async def teacher_view_report(
+    course_id: int,
+    student_id: int,
+    db: Session = Depends(get_db),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    """Lets a lecturer's Teacher Twin look directly into one of their
+    students' Student Twins — the same knowledge state, gaps, and
+    negotiation history the student sees themself. `student_id` is that
+    student's ATDT user id (from GET /courses/{id}/students on ATDT).
+
+    Authorization is proven by asking ATDT itself: fetching the course with
+    the caller's *own* token 403s unless the caller is that course's
+    lecturer, so ASDT never has to trust a role claim it can't verify.
+    """
+    token = credentials.credentials
+    who = await atdt_client.whoami(token)
+    if who.get("role") != "lecturer":
+        raise HTTPException(status_code=403, detail="Only a course's lecturer can view a student's twin")
+
+    await atdt_client.get_course(token, course_id)  # raises 403/404 if not this lecturer's course
+
+    student = db.query(Student).filter(Student.atdt_user_id == student_id).first()
+    if student is None:
+        # The student's ASDT has no local record yet (never synced/asked) —
+        # a real twin with nothing in it yet, not an error.
+        return PerformanceReport(
+            course_id=course_id,
+            student_email="",
+            overall_mastery=0.0,
+            topics=[],
+            open_gaps=0,
+            negotiating_gaps=0,
+            resolved_gaps=0,
+            recent_negotiations=[],
+            recent_interactions=[],
+        )
+    return _build_report(db, student, course_id)
