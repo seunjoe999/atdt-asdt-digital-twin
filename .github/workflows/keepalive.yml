@@ -2,12 +2,8 @@ name: Keep Render backends warm
 
 on:
   schedule:
-    # Every 10 minutes. Render's free tier spins a service down after ~15
-    # minutes of no HTTP traffic, and that spin-down wipes the ephemeral
-    # disk (SQLite DB + ChromaDB vector store) on next boot. Pinging /health
-    # regularly keeps both services warm so they never hit that idle timeout.
     - cron: "*/10 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
 
 jobs:
   ping:
