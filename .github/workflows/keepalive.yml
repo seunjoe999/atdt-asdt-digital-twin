@@ -1,0 +1,19 @@
+name: Keep Render backends warm
+
+on:
+  schedule:
+    # Every 10 minutes. Render's free tier spins a service down after ~15
+    # minutes of no HTTP traffic, and that spin-down wipes the ephemeral
+    # disk (SQLite DB + ChromaDB vector store) on next boot. Pinging /health
+    # regularly keeps both services warm so they never hit that idle timeout.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping ATDT backend
+        run: curl -sS -m 30 -o /dev/null -w "atdt-backend: %{http_code}\n" https://atdt-backend.onrender.com/health || true
+      - name: Ping ASDT backend
+        run: curl -sS -m 30 -o /dev/null -w "asdt-backend: %{http_code}\n" https://asdt-backend.onrender.com/health || true
