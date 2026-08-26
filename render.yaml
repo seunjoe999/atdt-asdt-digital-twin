@@ -8,8 +8,12 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
+      # sync: false means Render never overwrites this from the blueprint on
+      # deploy -- it's managed by hand in the dashboard (set to a persistent
+      # Postgres URL). Without this, every git-triggered deploy silently
+      # resets it back to the sqlite value below, wiping all data.
       - key: DATABASE_URL
-        value: sqlite:///./atdt.db
+        sync: false
       - key: CHROMA_DIR
         value: ./chroma_data
       - key: JWT_SECRET
@@ -28,8 +32,9 @@ services:
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
+      # sync: false -- see the atdt-backend service above for why.
       - key: DATABASE_URL
-        value: sqlite:///./asdt.db
+        sync: false
       # Render assigns this URL from the service name above; if "atdt-backend"
       # is already taken globally on onrender.com, Render will suffix it and
       # you'll need to update this value to match after the first deploy.
