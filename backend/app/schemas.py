@@ -132,6 +132,25 @@ class MessageOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+# ---------- Course messages (teacher <-> student) ----------
+
+
+class CourseMessageCreate(BaseModel):
+    content: str = Field(min_length=1)
+
+
+class CourseMessageOut(BaseModel):
+    id: int
+    course_id: int
+    sender_id: int
+    sender_name: str
+    sender_role: UserRole
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 # ---------- Examination ----------
 
 

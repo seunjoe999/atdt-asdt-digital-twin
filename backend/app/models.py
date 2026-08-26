@@ -201,6 +201,21 @@ class Attempt(Base):
     responses: Mapped[list["Response"]] = relationship(back_populates="attempt")
 
 
+class CourseMessage(Base):
+    """A shared, course-wide message board so a lecturer and their enrolled
+    students can talk directly — independent of the AI tutoring/negotiation
+    channels, which are twin-to-twin, not person-to-person.
+    """
+
+    __tablename__ = "course_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), nullable=False)
+    sender_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
 class Response(Base):
     __tablename__ = "responses"
 
