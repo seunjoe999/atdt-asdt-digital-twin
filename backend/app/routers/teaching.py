@@ -4,9 +4,14 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import get_current_user, require_lecturer
 from app.models import Course, TeachingMaterial, User
-from app.rag.agent import generate_teaching_material
+from app.rag.agent import generate_teaching_advice, generate_teaching_material
 from app.routers.courses import _ensure_access
-from app.schemas import TeachingMaterialOut, TeachingMaterialRequest
+from app.schemas import (
+    TeachingAdviceRequest,
+    TeachingAdviceResponse,
+    TeachingMaterialOut,
+    TeachingMaterialRequest,
+)
 
 router = APIRouter(prefix="/courses/{course_id}/teaching", tags=["teaching"])
 
@@ -83,3 +88,32 @@ def publish_material(
     db.commit()
     db.refresh(material)
     return material
+
+
+@router.post("/advice", response_model=TeachingAdviceResponse)
+async def generate_advice(
+    course_id: int,
+    payload: TeachingAdviceRequest,
+    db: Session = Depends(get_db),
+    lecturer: User = Depends(require_lecturer),
+):
+    """Real ATDT-generated advice for one student, grounded in this course's
+    material — the lecturer supplies the student's current ASDT knowledge
+    state (already loaded from ASDT's teacher/report by the frontend), and
+    the Teacher Twin turns it into a concrete recommendation instead of a
+    frontend-computed heuristic.
+    """
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    _ensure_access(db, course, lecturer)
+
+    advice = await generate_teaching_advice(
+        collection_name=course.chroma_collection_name,
+        persona=f"the lecturer for {course.title}",
+        student_name=payload.student_name,
+        overall_mastery=payload.overall_mastery,
+        open_gaps=payload.open_gaps,
+        topics=[(t.topic, t.mastery) for t in payload.topics],
+    )
+    return TeachingAdviceResponse(advice=advice)

@@ -105,3 +105,43 @@ async def generate_teaching_material(
 
     content = await generate(system_prompt, user_prompt)
     return content, chunks
+
+
+async def generate_teaching_advice(
+    *,
+    collection_name: str,
+    persona: str,
+    student_name: str,
+    overall_mastery: float,
+    open_gaps: int,
+    topics: list[tuple[str, float]],
+) -> str:
+    """The Teacher Twin's advice for one specific student — grounded in the
+    same course material as tutoring/materials, but addressed to the
+    lecturer: what to actually do about this student's measured gaps.
+    """
+    weak_topics = [t for t, m in topics if m < 0.8]
+    query = ", ".join(weak_topics) if weak_topics else "course fundamentals"
+    chunks = retrieve(collection_name, query, k=6)
+    context = _build_context(chunks)
+
+    topic_lines = "\n".join(f"- {t}: {round(m * 100)}% mastery" for t, m in topics) or "(no graded assessments yet)"
+
+    system_prompt = (
+        f"You are {persona}'s Teacher Twin, advising the lecturer on how to help one specific "
+        "student, using ONLY the course material excerpts below to ground any content "
+        "recommendations. Give concrete, actionable advice: which topics to revisit, what "
+        "kind of intervention fits the severity, and reference the course material by "
+        "[Source N] where relevant. Keep it to a short paragraph plus a few bullet points. "
+        "Do not invent facts not supported by the excerpts.\n\n"
+        f"COURSE MATERIAL:\n{context}"
+    )
+    user_prompt = (
+        f"Student: {student_name}\n"
+        f"Overall mastery: {round(overall_mastery * 100)}%\n"
+        f"Open gaps: {open_gaps}\n"
+        f"Per-topic mastery:\n{topic_lines}\n\n"
+        "What should this lecturer do for this student?"
+    )
+
+    return await generate(system_prompt, user_prompt)

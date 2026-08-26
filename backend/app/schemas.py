@@ -106,6 +106,22 @@ class TeachingMaterialOut(BaseModel):
     published: bool
     created_at: datetime
 
+
+class StudentAdviceTopic(BaseModel):
+    topic: str
+    mastery: float
+
+
+class TeachingAdviceRequest(BaseModel):
+    student_name: str
+    overall_mastery: float
+    open_gaps: int
+    topics: list[StudentAdviceTopic] = []
+
+
+class TeachingAdviceResponse(BaseModel):
+    advice: str
+
     model_config = ConfigDict(from_attributes=True)
 
 
