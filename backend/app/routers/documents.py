@@ -6,7 +6,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, UploadFi
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import require_lecturer
+from app.deps import get_current_user, require_lecturer
 from app.models import Course, Document, DocumentStatus, User
 from app.rag.ingest import ingest_document
 from app.routers.courses import _ensure_access
@@ -18,11 +18,11 @@ router = APIRouter(prefix="/courses/{course_id}/documents", tags=["documents"])
 ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt"}
 
 
-def _get_course_or_404(db: Session, course_id: int, lecturer: User) -> Course:
+def _get_course_or_404(db: Session, course_id: int, user: User) -> Course:
     course = db.get(Course, course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")
-    _ensure_access(db, course, lecturer)
+    _ensure_access(db, course, user)
     return course
 
 
@@ -85,6 +85,8 @@ def _run_ingestion(course_id, document_id, collection_name, tmp_path, filename):
 
 
 @router.get("", response_model=list[DocumentOut])
-def list_documents(course_id: int, db: Session = Depends(get_db), lecturer: User = Depends(require_lecturer)):
-    course = _get_course_or_404(db, course_id, lecturer)
+def list_documents(course_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """Readable by the course's lecturer or any enrolled student — this is
+    what lets a student see what ATDT has actually learned from."""
+    course = _get_course_or_404(db, course_id, user)
     return db.query(Document).filter(Document.course_id == course.id).all()

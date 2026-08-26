@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import require_lecturer
+from app.deps import get_current_user, require_lecturer
 from app.models import Course, TeachingMaterial, User
 from app.rag.agent import generate_teaching_material
 from app.routers.courses import _ensure_access
@@ -47,6 +47,21 @@ def list_materials(course_id: int, db: Session = Depends(get_db), lecturer: User
         raise HTTPException(status_code=404, detail="Course not found")
     _ensure_access(db, course, lecturer)
     return db.query(TeachingMaterial).filter(TeachingMaterial.course_id == course.id).all()
+
+
+@router.get("/materials/published", response_model=list[TeachingMaterialOut])
+def list_published_materials(course_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    """The student-facing "read the course" feed: published teaching
+    material only, readable by the lecturer or any enrolled student."""
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    _ensure_access(db, course, user)
+    return (
+        db.query(TeachingMaterial)
+        .filter(TeachingMaterial.course_id == course.id, TeachingMaterial.published.is_(True))
+        .all()
+    )
 
 
 @router.post("/materials/{material_id}/publish", response_model=TeachingMaterialOut)
