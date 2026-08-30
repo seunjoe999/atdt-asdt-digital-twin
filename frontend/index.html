@@ -4,101 +4,101 @@
 <meta charset="utf-8" />
 <title>Twinclass — ATDT + ASDT Digital Twin Classroom</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23101d42'/%3E%3Cpath d='M9 20V12l7-4 7 4v8l-7 4-7-4Z' fill='none' stroke='%23ff6f5e' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M9 12l7 4 7-4' fill='none' stroke='%23ff6f5e' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23001F5B'/%3E%3Cpath d='M9 20V12l7-4 7 4v8l-7 4-7-4Z' fill='none' stroke='%23FF6F61' stroke-width='2' stroke-linejoin='round'/%3E%3Cpath d='M9 12l7 4 7-4' fill='none' stroke='%23FF6F61' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light;
-    --bg: #f9f9f7;
-    --surface: #fcfcfb;
-    --surface-2: #f1f1ee;
-    --border: rgba(11,11,11,0.10);
-    --border-strong: rgba(11,11,11,0.16);
-    --text: #0b0b0b;
-    --text-muted: #52514e;
-    --text-faint: #898781;
-    --primary: #2a78d6;
+    --bg: #F5F7FA;
+    --surface: #ffffff;
+    --surface-2: #F5F7FA;
+    --border: rgba(0,31,91,0.10);
+    --border-strong: rgba(0,31,91,0.16);
+    --text: #0B1220;
+    --text-muted: #5B6472;
+    --text-faint: #8A93A3;
+    --primary: #FF6F61;
     --primary-ink: #ffffff;
-    --primary-soft: rgba(42,120,214,0.10);
-    --primary-soft-strong: rgba(42,120,214,0.18);
-    --accent: #1baf7a;
-    --good: #0ca30c;
-    --good-soft: rgba(12,163,12,0.12);
-    --warning: #c98500;
-    --warning-soft: rgba(250,178,25,0.18);
-    --critical: #d03b3b;
-    --critical-soft: rgba(208,59,59,0.10);
-    --track: #e1e0d9;
+    --primary-soft: rgba(255,111,97,0.10);
+    --primary-soft-strong: rgba(255,111,97,0.18);
+    --accent: #00E5FF;
+    --good: #00C853;
+    --good-soft: rgba(0,200,83,0.12);
+    --warning: #FFB300;
+    --warning-soft: rgba(255,179,0,0.18);
+    --critical: #FF3D00;
+    --critical-soft: rgba(255,61,0,0.10);
+    --track: #E9EDF3;
     --radius: 12px;
     --radius-lg: 16px;
-    --shadow: 0 1px 2px rgba(11,11,11,.04), 0 6px 20px -8px rgba(11,11,11,.10);
-    --shadow-lg: 0 4px 8px rgba(11,11,11,.04), 0 16px 40px -12px rgba(11,11,11,.16);
+    --shadow: 0 1px 2px rgba(0,31,91,.04), 0 6px 20px -8px rgba(0,31,91,.10);
+    --shadow-lg: 0 4px 8px rgba(0,31,91,.04), 0 16px 40px -12px rgba(0,31,91,.18);
     --sidebar-w: 248px;
     --topbar-h: 64px;
-    --font-heading: 'Baloo 2', 'Segoe UI', system-ui, sans-serif;
-    --navy: #101d42;
-    --navy-2: #172a5c;
-    --navy-ink: #f3f5ff;
-    --navy-ink-muted: #aab4e0;
-    --navy-card: rgba(255,255,255,0.06);
-    --navy-card-border: rgba(255,255,255,0.12);
-    --coral: #ff6f5e;
-    --coral-dark: #f0503d;
+    --font-heading: 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+    --navy: #001F5B;
+    --navy-2: #0B3380;
+    --navy-ink: #ffffff;
+    --navy-ink-muted: rgba(255,255,255,0.65);
+    --navy-card: rgba(255,255,255,0.08);
+    --navy-card-border: rgba(255,255,255,0.14);
+    --coral: #FF6F61;
+    --coral-dark: #E85A4C;
     --coral-ink: #ffffff;
-    --coral-soft: rgba(255,111,94,0.12);
-    --cyan: #38bdf8;
+    --coral-soft: rgba(255,111,97,0.12);
+    --cyan: #00E5FF;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       color-scheme: dark;
-      --bg: #0d0d0d;
-      --surface: #1a1a19;
-      --surface-2: #232322;
+      --bg: #051029;
+      --surface: #0B1D42;
+      --surface-2: #0F2650;
       --border: rgba(255,255,255,0.10);
       --border-strong: rgba(255,255,255,0.18);
-      --text: #ffffff;
-      --text-muted: #c3c2b7;
-      --text-faint: #898781;
-      --primary: #3987e5;
+      --text: #F3F6FC;
+      --text-muted: #A9B4CC;
+      --text-faint: #7C88A6;
+      --primary: #FF6F61;
       --primary-ink: #ffffff;
-      --primary-soft: rgba(57,135,229,0.16);
-      --primary-soft-strong: rgba(57,135,229,0.26);
-      --accent: #199e70;
-      --good: #0ca30c;
-      --good-soft: rgba(12,163,12,0.18);
-      --warning: #fab219;
-      --warning-soft: rgba(250,178,25,0.16);
-      --critical: #e66767;
-      --critical-soft: rgba(230,103,103,0.16);
-      --track: #2c2c2a;
+      --primary-soft: rgba(255,111,97,0.16);
+      --primary-soft-strong: rgba(255,111,97,0.26);
+      --accent: #00E5FF;
+      --good: #00C853;
+      --good-soft: rgba(0,200,83,0.18);
+      --warning: #FFB300;
+      --warning-soft: rgba(255,179,0,0.18);
+      --critical: #FF6B4A;
+      --critical-soft: rgba(255,107,74,0.18);
+      --track: #16305F;
       --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
       --shadow-lg: 0 4px 8px rgba(0,0,0,.3), 0 16px 40px -12px rgba(0,0,0,.6);
     }
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #0d0d0d;
-    --surface: #1a1a19;
-    --surface-2: #232322;
+    --bg: #051029;
+    --surface: #0B1D42;
+    --surface-2: #0F2650;
     --border: rgba(255,255,255,0.10);
     --border-strong: rgba(255,255,255,0.18);
-    --text: #ffffff;
-    --text-muted: #c3c2b7;
-    --text-faint: #898781;
-    --primary: #3987e5;
+    --text: #F3F6FC;
+    --text-muted: #A9B4CC;
+    --text-faint: #7C88A6;
+    --primary: #FF6F61;
     --primary-ink: #ffffff;
-    --primary-soft: rgba(57,135,229,0.16);
-    --primary-soft-strong: rgba(57,135,229,0.26);
-    --accent: #199e70;
-    --good: #0ca30c;
-    --good-soft: rgba(12,163,12,0.18);
-    --warning: #fab219;
-    --warning-soft: rgba(250,178,25,0.16);
-    --critical: #e66767;
-    --critical-soft: rgba(230,103,103,0.16);
-    --track: #2c2c2a;
+    --primary-soft: rgba(255,111,97,0.16);
+    --primary-soft-strong: rgba(255,111,97,0.26);
+    --accent: #00E5FF;
+    --good: #00C853;
+    --good-soft: rgba(0,200,83,0.18);
+    --warning: #FFB300;
+    --warning-soft: rgba(255,179,0,0.18);
+    --critical: #FF6B4A;
+    --critical-soft: rgba(255,107,74,0.18);
+    --track: #16305F;
     --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px -8px rgba(0,0,0,.5);
     --shadow-lg: 0 4px 8px rgba(0,0,0,.3), 0 16px 40px -12px rgba(0,0,0,.6);
   }
@@ -106,7 +106,7 @@
   * { box-sizing: border-box; }
   html, body { height: 100%; }
   body {
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-family: var(--font-heading);
     margin: 0; background: var(--bg); color: var(--text); line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
@@ -965,11 +965,15 @@ async function sendAsk() {
 
 async function syncAsdt() {
   const status = document.getElementById('sync-status');
-  status.textContent = 'Syncing with ATDT...';
-  const res = await asdt('/asdt/sync', { method: 'POST', json: { course_id: currentCourse.id } });
-  status.textContent = `Synced. ${res.new_gaps.length} new gap(s), ${res.resolved_gaps.length} resolved.`;
-  renderMastery(res.knowledge_states);
-  loadGaps();
+  status.textContent = 'Syncing with ATDT... (backends sleep when idle — this can take up to a minute)';
+  try {
+    const res = await asdt('/asdt/sync', { method: 'POST', json: { course_id: currentCourse.id } });
+    status.textContent = `Synced. ${res.new_gaps.length} new gap(s), ${res.resolved_gaps.length} resolved.`;
+    renderMastery(res.knowledge_states);
+    loadGaps();
+  } catch (e) {
+    status.textContent = `Sync failed: ${e.message}`;
+  }
 }
 
 function masteryStatus(mastery) {
