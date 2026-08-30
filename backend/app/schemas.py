@@ -125,6 +125,16 @@ class TeachingAdviceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class TeachingStyleIn(BaseModel):
+    sample: str = Field(min_length=40, description="A lecture transcript, notes, or script excerpt")
+
+
+class TeachingStyleOut(BaseModel):
+    has_profile: bool
+    style_summary: str = ""
+    updated_at: datetime | None = None
+
+
 # ---------- Tutoring ----------
 
 

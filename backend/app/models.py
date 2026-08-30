@@ -130,6 +130,21 @@ class TeachingMaterial(Base):
     course: Mapped["Course"] = relationship(back_populates="materials")
 
 
+class TeachingStyleProfile(Base):
+    """The ATDT's captured impression of how this course's lecturer actually
+    teaches — built from a pasted lecture transcript/notes sample and reused
+    as a persona suffix everywhere the twin generates or speaks, so it sounds
+    like this lecturer rather than a generic tutor."""
+
+    __tablename__ = "teaching_style_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"), unique=True, nullable=False)
+    sample: Mapped[str] = mapped_column(Text, nullable=False)
+    style_summary: Mapped[str] = mapped_column(Text, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc, onupdate=now_utc)
+
+
 class Conversation(Base):
     __tablename__ = "conversations"
 

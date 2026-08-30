@@ -3,17 +3,30 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.deps import get_current_user, require_lecturer
-from app.models import Course, TeachingMaterial, User
-from app.rag.agent import generate_teaching_advice, generate_teaching_material
+from app.models import Course, TeachingMaterial, TeachingStyleProfile, User
+from app.rag.agent import extract_teaching_style, generate_teaching_advice, generate_teaching_material
 from app.routers.courses import _ensure_access
 from app.schemas import (
     TeachingAdviceRequest,
     TeachingAdviceResponse,
     TeachingMaterialOut,
     TeachingMaterialRequest,
+    TeachingStyleIn,
+    TeachingStyleOut,
 )
 
 router = APIRouter(prefix="/courses/{course_id}/teaching", tags=["teaching"])
+
+
+def persona_for(course: Course, db: Session) -> str:
+    """The lecturer persona ATDT speaks/generates as — augmented with a
+    captured teaching-style profile when one exists, so the twin actually
+    sounds like this lecturer rather than a generic tutor."""
+    base = f"the lecturer for {course.title}"
+    profile = db.query(TeachingStyleProfile).filter(TeachingStyleProfile.course_id == course.id).first()
+    if not profile:
+        return base
+    return f"{base}, who teaches in this observed style:\n{profile.style_summary}"
 
 
 @router.post("/materials", response_model=TeachingMaterialOut, status_code=201)
@@ -33,7 +46,7 @@ async def create_material(
         material_type=payload.type.value,
         topic=payload.topic,
         instructions=payload.instructions,
-        persona=f"the lecturer for {course.title}",
+        persona=persona_for(course, db),
     )
 
     material = TeachingMaterial(
@@ -110,10 +123,58 @@ async def generate_advice(
 
     advice = await generate_teaching_advice(
         collection_name=course.chroma_collection_name,
-        persona=f"the lecturer for {course.title}",
+        persona=persona_for(course, db),
         student_name=payload.student_name,
         overall_mastery=payload.overall_mastery,
         open_gaps=payload.open_gaps,
         topics=[(t.topic, t.mastery) for t in payload.topics],
     )
     return TeachingAdviceResponse(advice=advice)
+
+
+@router.post("/style", response_model=TeachingStyleOut)
+async def capture_style(
+    course_id: int,
+    payload: TeachingStyleIn,
+    db: Session = Depends(get_db),
+    lecturer: User = Depends(require_lecturer),
+):
+    """The "observes the teacher and teaches like them" feature: the lecturer
+    pastes a lecture transcript/notes sample, ATDT distills a style
+    descriptor from it, and every future generation/tutoring answer for this
+    course folds that descriptor into its persona.
+    """
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    _ensure_access(db, course, lecturer)
+
+    style_summary = await extract_teaching_style(payload.sample)
+
+    profile = db.query(TeachingStyleProfile).filter(TeachingStyleProfile.course_id == course.id).first()
+    if profile:
+        profile.sample = payload.sample
+        profile.style_summary = style_summary
+    else:
+        profile = TeachingStyleProfile(course_id=course.id, sample=payload.sample, style_summary=style_summary)
+        db.add(profile)
+    db.commit()
+    db.refresh(profile)
+    return TeachingStyleOut(has_profile=True, style_summary=profile.style_summary, updated_at=profile.updated_at)
+
+
+@router.get("/style", response_model=TeachingStyleOut)
+def get_style(
+    course_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    _ensure_access(db, course, user)
+
+    profile = db.query(TeachingStyleProfile).filter(TeachingStyleProfile.course_id == course.id).first()
+    if not profile:
+        return TeachingStyleOut(has_profile=False)
+    return TeachingStyleOut(has_profile=True, style_summary=profile.style_summary, updated_at=profile.updated_at)

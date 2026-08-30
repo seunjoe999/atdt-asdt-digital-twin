@@ -6,6 +6,7 @@ from app.deps import require_student
 from app.models import Conversation, Course, Message, MessageRole, User
 from app.rag.agent import answer_question
 from app.routers.courses import _ensure_access
+from app.routers.teaching import persona_for
 from app.schemas import Citation, MessageOut, TutorAnswer, TutorQuery
 
 router = APIRouter(prefix="/courses/{course_id}/tutoring", tags=["tutoring"])
@@ -48,7 +49,7 @@ async def query_tutor(
     answer, chunks = await answer_question(
         collection_name=course.chroma_collection_name,
         question=payload.question,
-        persona=f"the lecturer for {course.title}",
+        persona=persona_for(course, db),
         history=history_text,
     )
 

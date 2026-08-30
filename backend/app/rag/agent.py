@@ -107,6 +107,23 @@ async def generate_teaching_material(
     return content, chunks
 
 
+async def extract_teaching_style(sample: str) -> str:
+    """Distills a lecturer's raw teaching sample (transcript, notes, script)
+    into a short, reusable style descriptor the twin folds into its persona
+    everywhere it speaks for this course — this is the "observes the teacher
+    and teaches like them" behaviour, not a RAG lookup, so it takes no
+    collection and does no retrieval."""
+    system_prompt = (
+        "You are an expert teaching-style analyst. Read the lecturer's sample below and "
+        "distill HOW they teach into 3-5 short bullet points: tone/formality, pacing, use "
+        "of examples or analogies, favourite phrases or verbal habits, and how they handle "
+        "student confusion. Do not summarise the subject content — only the teaching style. "
+        "Write it as an instruction another teacher could follow to sound like this lecturer."
+    )
+    user_prompt = f"Teaching sample:\n\n{sample}"
+    return await generate(system_prompt, user_prompt)
+
+
 async def generate_teaching_advice(
     *,
     collection_name: str,

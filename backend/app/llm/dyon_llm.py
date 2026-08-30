@@ -223,6 +223,20 @@ def _demo_counsel(prompt: str) -> str:
     )
 
 
+def _demo_style(prompt: str) -> str:
+    """No course material, no rubric — just a few generic-but-plausible
+    style bullets so the "observe the teacher" feature is demoable offline
+    without a real LLM doing the reading."""
+    return (
+        "[Demo mode] Style notes (a real LLM would read your sample far more closely):\n"
+        "- Tone: conversational and encouraging, not overly formal\n"
+        "- Pacing: introduces one idea at a time before moving on\n"
+        "- Examples: leans on everyday analogies to make abstract ideas concrete\n"
+        "- Handling confusion: rephrases rather than just repeating the same explanation\n"
+        "- Verbal habit: frequently checks understanding before moving forward"
+    )
+
+
 def _atdt_offline_responder(prompt: str) -> str:
     """A course-aware offline responder (dyon's documented extension point,
     see ``OfflineChatModel``'s docstring): recognises ATDT's own prompt
@@ -230,6 +244,8 @@ def _atdt_offline_responder(prompt: str) -> str:
     valid reply for each, so every channel is demoable end to end with zero
     API keys and zero network calls.
     """
+    if "teaching-style analyst" in prompt.lower():
+        return _demo_style(prompt)
     if "counselor twin" in prompt.lower():
         return _demo_counsel(prompt)
     if '"mcqs"' in prompt and '"saqs"' in prompt:
