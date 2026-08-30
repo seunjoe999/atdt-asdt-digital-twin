@@ -262,3 +262,56 @@ class MyAttemptOut(BaseModel):
     topic: str
     total_score: float | None
     submitted_at: datetime | None
+
+
+# ---------- Wellbeing (counseling + gamification) ----------
+
+
+class CheckInCreate(BaseModel):
+    mood: int = Field(ge=1, le=5)
+    stress: int = Field(ge=1, le=5)
+    note: str = ""
+
+
+class CheckInOut(BaseModel):
+    id: int
+    mood: int
+    stress: int
+    note: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StreakOut(BaseModel):
+    current_streak: int
+    longest_streak: int
+    xp: int
+    level: int
+    badges: list[str]
+
+
+class CounselMessageIn(BaseModel):
+    message: str
+
+
+class CounselMessageOut(BaseModel):
+    reply: str
+    flagged: bool
+    resources: list[str] = []
+
+
+class CounselHistoryItem(BaseModel):
+    role: MessageRole
+    content: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AtRiskStudentOut(BaseModel):
+    student_id: int
+    full_name: str
+    risk_score: int
+    risk_label: str
+    reasons: list[str]

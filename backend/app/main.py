@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.database import Base, engine
-from app.routers import auth, courses, documents, examination, messages, teaching, tutoring
+from app.routers import auth, courses, documents, examination, messages, teaching, tutoring, wellbeing
 
 logging.basicConfig(level=logging.INFO)
 
@@ -35,6 +35,8 @@ app.include_router(teaching.router)
 app.include_router(tutoring.router)
 app.include_router(examination.router)
 app.include_router(messages.router)
+app.include_router(wellbeing.router)
+app.include_router(wellbeing.course_router)
 
 
 @app.get("/health")

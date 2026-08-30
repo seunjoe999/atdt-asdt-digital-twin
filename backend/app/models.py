@@ -227,3 +227,43 @@ class Response(Base):
     feedback: Mapped[str] = mapped_column(Text, default="")
 
     attempt: Mapped["Attempt"] = relationship(back_populates="responses")
+
+
+class CheckIn(Base):
+    """A student's daily wellbeing self-report — the raw signal the at-risk
+    dashboard and the counseling twin both read from."""
+
+    __tablename__ = "wellbeing_checkins"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    mood: Mapped[int] = mapped_column(Integer, nullable=False)  # 1 (low) - 5 (great)
+    stress: Mapped[int] = mapped_column(Integer, nullable=False)  # 1 (calm) - 5 (overwhelmed)
+    note: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
+
+
+class StreakState(Base):
+    """One row per student tracking the gamified daily-engagement streak."""
+
+    __tablename__ = "streak_states"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, nullable=False)
+    current_streak: Mapped[int] = mapped_column(Integer, default=0)
+    longest_streak: Mapped[int] = mapped_column(Integer, default=0)
+    xp: Mapped[int] = mapped_column(Integer, default=0)
+    last_active_date: Mapped[str] = mapped_column(String(10), default="")  # YYYY-MM-DD
+
+
+class CounselingMessage(Base):
+    """Turn-by-turn log of a student's chat with the AI counselor twin."""
+
+    __tablename__ = "counseling_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    student_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    role: Mapped[MessageRole] = mapped_column(Enum(MessageRole), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    flagged: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now_utc)
