@@ -201,6 +201,28 @@ def _demo_grade(prompt: str) -> str:
     return json.dumps({"score": score, "feedback": feedback})
 
 
+def _demo_counsel(prompt: str) -> str:
+    """The counseling channel has no course material to ground answers in —
+    ``_demo_answer``'s "no course material ingested" fallback is wrong here,
+    so it gets its own canned-but-warm response instead."""
+    crisis = "may be in crisis" in prompt
+    if crisis:
+        return (
+            "[Demo mode] I hear you, and I'm really glad you told me this. What you're feeling "
+            "matters, and you don't have to carry it alone. Please reach out to a trusted adult, "
+            "your school counselor, or a crisis service right now — I'll stay right here with you "
+            "in the meantime."
+        )
+    student_message = prompt.rsplit("\n\n", 1)[-1].strip()
+    topic = (student_message[:120].rstrip(".") or "how you're doing").lower()
+    return (
+        f"[Demo mode] Thanks for sharing that — it sounds like {topic} has been on your mind. "
+        "That's completely understandable, and it's worth taking seriously rather than pushing "
+        "through alone. One small next step: could you tell me one specific thing about it that's "
+        "weighing on you most right now?"
+    )
+
+
 def _atdt_offline_responder(prompt: str) -> str:
     """A course-aware offline responder (dyon's documented extension point,
     see ``OfflineChatModel``'s docstring): recognises ATDT's own prompt
@@ -208,6 +230,8 @@ def _atdt_offline_responder(prompt: str) -> str:
     valid reply for each, so every channel is demoable end to end with zero
     API keys and zero network calls.
     """
+    if "counselor twin" in prompt.lower():
+        return _demo_counsel(prompt)
     if '"mcqs"' in prompt and '"saqs"' in prompt:
         return _demo_assessment(prompt)
     if '"score"' in prompt and '"feedback"' in prompt:
