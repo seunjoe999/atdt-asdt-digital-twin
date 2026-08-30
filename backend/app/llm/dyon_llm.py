@@ -255,6 +255,35 @@ def _atdt_offline_responder(prompt: str) -> str:
     return _demo_answer(prompt)
 
 
+_GEMINI_OPENAI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
+
+
+def _build_gemini_llm(config: TwinConfig):
+    # dyon (v0.11) only ships OpenAI/Anthropic/Ollama/offline — Gemini has no
+    # first-class support there. Google exposes an OpenAI-compatible endpoint
+    # though, so we bypass dyon's build_llm for this one provider and
+    # construct ChatOpenAI directly, pointed at that endpoint. Every other
+    # provider still goes through dyon unchanged.
+    from langchain_openai import ChatOpenAI
+
+    # LLMConfig.model defaults to "gpt-4o-mini" (dyon's OpenAI default), which
+    # isn't empty — so a plain `or` fallback never fires and DT_LLM__MODEL
+    # left unset would silently send an OpenAI model name to Gemini's
+    # endpoint. Only trust an explicit "gemini*" model; anything else falls
+    # back to a sane Gemini default.
+    model = config.llm.model if config.llm.model.startswith("gemini") else "gemini-2.0-flash"
+
+    return ChatOpenAI(
+        model=model,
+        api_key=config.llm.api_key,
+        base_url=config.llm.base_url or _GEMINI_OPENAI_BASE_URL,
+        temperature=config.llm.temperature,
+        timeout=config.llm.timeout_s,
+        max_retries=config.llm.max_retries,
+        max_tokens=config.llm.max_tokens,
+    )
+
+
 @lru_cache
 def _llm():
     config = _config()
@@ -262,6 +291,8 @@ def _llm():
         from dyon.intelligent.offline_llm import OfflineChatModel
 
         return OfflineChatModel(responder=_atdt_offline_responder)
+    if config.llm.provider == "gemini":
+        return _build_gemini_llm(config)
     return build_llm(config)
 
 
