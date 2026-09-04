@@ -30,6 +30,7 @@ from app.schemas import (
     CounselHistoryItem,
     CounselMessageIn,
     CounselMessageOut,
+    CrisisAlertOut,
     StreakOut,
 )
 
@@ -168,7 +169,10 @@ async def counsel(
 ):
     crisis = _is_crisis(payload.message)
 
-    db.add(CounselingMessage(student_id=student.id, role=MessageRole.USER, content=payload.message))
+    # Flagging the student's own message (not just the AI's reply) is what
+    # makes it show up on the lecturer's crisis-alerts feed with the actual
+    # words the student used -- the reply alone isn't actionable context.
+    db.add(CounselingMessage(student_id=student.id, role=MessageRole.USER, content=payload.message, flagged=crisis))
     db.commit()
 
     system_prompt = _COUNSELOR_SYSTEM_PROMPT
@@ -314,3 +318,47 @@ def at_risk_students(
 
     results.sort(key=lambda r: r.risk_score, reverse=True)
     return results
+
+
+@course_router.get("/crisis-alerts", response_model=list[CrisisAlertOut])
+def crisis_alerts(
+    course_id: int, db: Session = Depends(get_db), lecturer: User = Depends(require_lecturer)
+):
+    """The crisis-chat human-escalation surface: every crisis-keyword-flagged
+    message a student in this course has sent the counselor twin, most
+    recent first. This is the "someone must actually see it" half of the
+    safety feature -- keyword detection alone does nothing if nobody reads
+    the result, so the lecturer's dashboard is where that has to land.
+    """
+    course = db.get(Course, course_id)
+    if not course:
+        raise HTTPException(status_code=404, detail="Course not found")
+    _ensure_access(db, course, lecturer)
+
+    student_ids = [e.student_id for e in db.query(Enrollment).filter(Enrollment.course_id == course.id)]
+    if not student_ids:
+        return []
+    students_by_id = {s.id: s for s in db.query(User).filter(User.id.in_(student_ids)).all()}
+
+    flagged = (
+        db.query(CounselingMessage)
+        .filter(
+            CounselingMessage.student_id.in_(student_ids),
+            CounselingMessage.role == MessageRole.USER,
+            CounselingMessage.flagged.is_(True),
+        )
+        .order_by(CounselingMessage.created_at.desc())
+        .limit(50)
+        .all()
+    )
+
+    return [
+        CrisisAlertOut(
+            student_id=m.student_id,
+            full_name=students_by_id[m.student_id].full_name,
+            message=m.content,
+            created_at=m.created_at,
+        )
+        for m in flagged
+        if m.student_id in students_by_id
+    ]

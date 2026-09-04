@@ -69,6 +69,53 @@ def test_counsel_crisis_message_is_flagged(client):
     assert history[1]["role"] == "assistant"
 
 
+def test_crisis_alerts_reach_the_lecturer(client):
+    r = client.post(
+        "/auth/register",
+        json={"email": "lecturer-crisis@example.com", "password": "password123", "full_name": "Dr. Crisis", "role": "lecturer"},
+    )
+    assert r.status_code == 201, r.text
+    lecturer_token = r.json()["access_token"]
+
+    student_token = _register_student(client, email="student-crisis@example.com")
+
+    r = client.post(
+        "/courses",
+        json={"title": "Crisis Course", "description": "", "subject_area": ""},
+        headers=_auth_header(lecturer_token),
+    )
+    assert r.status_code == 201, r.text
+    course = r.json()
+
+    r = client.post(
+        "/courses/enrol", json={"enrolment_code": course["enrolment_code"]}, headers=_auth_header(student_token)
+    )
+    assert r.status_code == 200, r.text
+
+    # A normal message should never show up as a crisis alert.
+    r = client.post("/wellbeing/counsel", json={"message": "just tired from studying"}, headers=_auth_header(student_token))
+    assert r.status_code == 200, r.text
+
+    r = client.get(f"/courses/{course['id']}/wellbeing/crisis-alerts", headers=_auth_header(lecturer_token))
+    assert r.status_code == 200, r.text
+    assert r.json() == []
+
+    # A crisis message must show up, with the student's own words.
+    r = client.post("/wellbeing/counsel", json={"message": "I want to end my life"}, headers=_auth_header(student_token))
+    assert r.status_code == 200, r.text
+
+    r = client.get(f"/courses/{course['id']}/wellbeing/crisis-alerts", headers=_auth_header(lecturer_token))
+    assert r.status_code == 200, r.text
+    alerts = r.json()
+    assert len(alerts) == 1
+    assert alerts[0]["message"] == "I want to end my life"
+    assert alerts[0]["full_name"] == "A. Student"
+
+    # A student can never read this endpoint.
+    r = client.get(f"/courses/{course['id']}/wellbeing/crisis-alerts", headers=_auth_header(student_token))
+    assert r.status_code == 403, r.text
+
+
 def test_at_risk_dashboard(client):
     r = client.post(
         "/auth/register",
