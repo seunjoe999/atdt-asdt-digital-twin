@@ -18,8 +18,11 @@ services:
         value: ./chroma_data
       - key: JWT_SECRET
         generateValue: true
+      # sync: false -- see DATABASE_URL above. Without it, every git-triggered
+      # deploy resets this to "offline" from the blueprint, silently undoing
+      # whatever real provider is set by hand in the dashboard.
       - key: DT_LLM__PROVIDER
-        value: offline
+        sync: false
       - key: PYTHON_VERSION
         value: 3.11.9
 
